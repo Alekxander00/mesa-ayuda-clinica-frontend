@@ -1,0 +1,195 @@
+/* frontend/src/app/login/page.module.css */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 1.5rem;
+  padding: 3rem;
+  box-shadow: var(--shadow-2xl);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
+  max-width: 28rem;
+  animation: slideUp 0.6s ease-out;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.logoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  border-radius: 1rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.logoText {
+  color: white;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.logoContent {
+  flex: 1;
+}
+
+.logoTitle {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: var(--gray-900);
+  margin: 0 0 0.25rem 0;
+}
+
+.logoSubtitle {
+  font-size: 1rem;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+.error {
+  background: var(--error-50);
+  border: 1px solid var(--error-200);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.errorTitle {
+  font-weight: 600;
+  color: var(--error-700);
+  margin: 0 0 0.5rem 0;
+}
+
+.errorMessage {
+  color: var(--error-600);
+  margin: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+}
+
+.errorButton {
+  background: none;
+  border: none;
+  color: var(--error-700);
+  font-size: 0.875rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.errorButton:hover {
+  color: var(--error-800);
+}
+
+.buttonContainer {
+  margin-bottom: 1.5rem;
+}
+
+.googleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.875rem 1.5rem;
+  background: white;
+  border: 1px solid var(--gray-300);
+  border-radius: 0.75rem;
+  color: var(--gray-700);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.googleButton:hover:not(:disabled) {
+  background: var(--gray-50);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.googleButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.googleIcon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--gray-300);
+  border-top: 2px solid var(--primary-600);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.footer {
+  text-align: center;
+}
+
+.footerText {
+  font-size: 0.875rem;
+  color: var(--gray-600);
+  margin: 0;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .card {
+    padding: 2rem;
+  }
+
+  .logo {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.75rem;
+  }
+
+  .logoTitle {
+    font-size: 1.5rem;
+  }
+
+  .logoSubtitle {
+    font-size: 0.875rem;
+  }
+}
