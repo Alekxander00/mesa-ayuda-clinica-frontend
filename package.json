@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "build": "next build", 
+    "start": "node .next/standalone/server.js",
+    "start:dev": "next start"
   },
   "dependencies": {
     "next": "14.0.3",
