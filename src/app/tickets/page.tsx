@@ -1,4 +1,4 @@
-// frontend/src/app/tickets/page.tsx - ACTUALIZADO CON CSS MODULES
+// frontend/src/app/tickets/page.tsx
 'use client';
 
 import { useTickets } from '@/hooks/useTickets';
@@ -7,12 +7,16 @@ import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import styles from './page.module.css';
+import { usePermissions } from '@/hooks/usePermissions';
 
 export default function TicketsPage() {
   const { tickets, loading, error, refetch, updateTicketStatus, updateTicketPriority, deleteTicket } = useTickets();
   const { data: session } = useSession();
   const [updatingTickets, setUpdatingTickets] = useState<Set<string>>(new Set());
   const [deletingTickets, setDeletingTickets] = useState<Set<string>>(new Set());
+
+  // ✅ USAR usePermissions EN LUGAR DE useSession PARA ROLES
+  const { isAdmin, isTechnician, canEditTickets, canDeleteTickets, canChangePriority } = usePermissions();
 
   const handleStatusChange = async (ticketId: string, newStatus: string) => {
     setUpdatingTickets(prev => new Set(prev).add(ticketId));
@@ -110,9 +114,6 @@ export default function TicketsPage() {
     );
   }
 
-  const isAdmin = session?.user?.role === 'admin';
-  const isTechnician = session?.user?.role === 'technician';
-
   return (
     <div className={styles.container}>
       <Header />
@@ -165,7 +166,9 @@ export default function TicketsPage() {
                        ticket.status === 'in_progress' ? 'En Progreso' :
                        ticket.status === 'resolved' ? 'Resuelto' : 'Cerrado'}
                     </span>
-                    {(isAdmin || isTechnician) ? (
+                    
+                    {/* ✅ CORREGIDO: Usar canChangePriority en lugar de isAdmin/isTechnician */}
+                    {canChangePriority ? (
                       <select
                         value={ticket.priority}
                         onChange={(e) => handlePriorityChange(ticket.id, parseInt(e.target.value))}
@@ -217,7 +220,8 @@ export default function TicketsPage() {
                   </div>
                 </div>
 
-                {(isAdmin || isTechnician) && (
+                {/* ✅ CORREGIDO: Usar canEditTickets y canDeleteTickets */}
+                {canEditTickets && (
                   <div className={styles.ticketActions}>
                     <div className={styles.actionButtons}>
                       {/* Cambiar Estado */}
@@ -252,7 +256,7 @@ export default function TicketsPage() {
                       )}
                       
                       {/* Eliminar (Solo Admin) */}
-                      {isAdmin && (
+                      {canDeleteTickets && (
                         <button
                           onClick={() => handleDeleteTicket(ticket.id)}
                           disabled={deletingTickets.has(ticket.id)}

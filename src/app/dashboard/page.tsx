@@ -1,12 +1,13 @@
-// frontend/src/app/dashboard/page.tsx - ACTUALIZADO CON CSS MODULES
+// frontend/src/app/dashboard/page.tsx
 'use client';
 
 import { useTickets } from '@/hooks/useTickets';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import styles from './page.module.css';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface DashboardStats {
   total: number;
@@ -26,6 +27,10 @@ export default function DashboardPage() {
     resolved: 0,
     myTickets: 0
   });
+  
+
+  // ✅ USAR usePermissions PARA ROLES
+  const { isAdmin, isTechnician, role } = usePermissions();
 
   useEffect(() => {
     const ticketsArray = Array.isArray(tickets) ? tickets : [];
@@ -72,9 +77,6 @@ export default function DashboardPage() {
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 5)
     : [];
-
-  const isAdmin = session?.user?.role === 'admin';
-  const isTechnician = session?.user?.role === 'technician';
 
   return (
     <div className={styles.container}>

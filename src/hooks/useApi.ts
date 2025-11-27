@@ -1,65 +1,117 @@
-// frontend/src/hooks/useApi.ts - ACTUALIZADO PARA v5
+// frontend/src/hooks/useApi.ts - VERSIÓN OPTIMIZADA
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useCallback, useEffect } from 'react';
-import { hardRefreshSession } from '@/services/authService';
+import { useCallback, useEffect, useState, useRef } from 'react';
+
+export interface BackendUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'technician' | 'user' | 'auditor';
+  department?: string;
+  specialization?: string;
+}
 
 export function useApi() {
-  const { data: session } = useSession();
+  const { data: session, update } = useSession();
+  const [backendUser, setBackendUser] = useState<BackendUser | null>(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const syncAttempted = useRef(false); // ✅ EVITA SINCronizaciones múltiples
 
-  // Refrescar sesión periódicamente (cada 10 minutos)
-  useEffect(() => {
-    if (session) {
-      const interval = setInterval(() => {
-        // En v5, recargamos la página para forzar actualización completa
-        console.log('🔄 Refrescando sesión automáticamente...');
-        hardRefreshSession();
-      }, 10 * 60 * 1000); // 10 minutos
+  const syncUserWithBackend = useCallback(async (force = false) => {
+    // ✅ PREVENIR múltiples sincronizaciones simultáneas
+    if (!session?.user?.email || (isSyncing && !force) || syncAttempted.current) return;
+    
+    syncAttempted.current = true;
+    setIsSyncing(true);
+    
+    try {
+      console.log('🔄 Sincronizando usuario con backend...', session.user.email);
+      const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
+      
+      const response = await fetch(`${baseURL}/auth/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': session.user.email,
+        },
+        body: JSON.stringify({
+          email: session.user.email,
+          name: session.user.name,
+        }),
+      });
 
-      return () => clearInterval(interval);
+      console.log('📡 Response status:', response.status);
+      
+      if (response.ok) {
+        const userData: BackendUser = await response.json();
+        
+        // ✅ ACTUALIZAR SOLO SI HAY CAMBIOS REALES
+        setBackendUser(prev => {
+          if (JSON.stringify(prev) === JSON.stringify(userData)) return prev;
+          return userData;
+        });
+        
+        console.log('✅ Usuario sincronizado con backend:', userData);
+        
+        // ✅ ACTUALIZAR SESIÓN SOLO SI EL ROL CAMBIÓ
+        if (update && userData.role !== session.user.role) {
+          console.log('🔄 Actualizando sesión NextAuth con nuevo rol:', userData.role);
+          await update({
+            user: {
+              ...session.user,
+              role: userData.role,
+              id: userData.id,
+            }
+          });
+        }
+        return userData;
+      } else {
+        const errorText = await response.text();
+        console.error('❌ Error en respuesta del backend:', response.status, errorText);
+      }
+    } catch (error) {
+      console.error('❌ Error sincronizando usuario:', error);
+    } finally {
+      setIsSyncing(false);
+      // NO resetear syncAttempted aquí para prevenir loops
     }
-  }, [session]);
+    return null;
+  }, [session, update, isSyncing]);
+
+  // ✅ Sincronización MÁS CONSERVADORA - solo una vez al montar
+  useEffect(() => {
+    if (session?.user?.email && !backendUser && !syncAttempted.current) {
+      console.log('🎯 Iniciando sincronización automática...');
+      syncUserWithBackend();
+      
+      // ✅ LIMPIAR el flag después de un tiempo para permitir re-sincronizaciones manuales
+      const timer = setTimeout(() => {
+        syncAttempted.current = false;
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [session, backendUser, syncUserWithBackend]);
 
   const apiRequest = useCallback(async (url: string, options: RequestInit = {}) => {
-    const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
 
-    if (options.headers) {
-      if (options.headers instanceof Headers) {
-        options.headers.forEach((value, key) => {
-          headers[key] = value;
-        });
-      } else if (Array.isArray(options.headers)) {
-        options.headers.forEach(([key, value]) => {
-          headers[key] = value;
-        });
-      } else {
-        Object.entries(options.headers).forEach(([key, value]) => {
-          headers[key] = value as string;
-        });
-      }
-    }
-
     if (session?.user?.email) {
       headers['x-user-email'] = session.user.email;
-      console.log('📨 useApi - Enviando header x-user-email:', session.user.email);
-    } else {
-      console.warn('⚠️ useApi - No hay email en la sesión');
     }
 
     try {
-      console.log('🔄 useApi - Request:', `${baseURL}${url}`);
       const response = await fetch(`${baseURL}${url}`, {
         ...options,
         headers,
       });
 
-      console.log('📡 useApi - Response Status:', response.status);
-      
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`Error ${response.status}: ${errorText}`);
@@ -80,5 +132,27 @@ export function useApi() {
   const del = useCallback((url: string) => 
     apiRequest(url, { method: 'DELETE' }), [apiRequest]);
 
-  return { get, post, put, del, session };
+  return { 
+    get, 
+    post, 
+    put, 
+    del, 
+    session,
+    backendUser: backendUser || {
+      id: session?.user?.id || '',
+      name: session?.user?.name || '',
+      email: session?.user?.email || '',
+      role: (session?.user?.role as any) || 'user'
+    },
+    isSyncing,
+    refetchUser: () => {
+      syncAttempted.current = false;
+      return syncUserWithBackend(true);
+    },
+    forceSync: () => {
+      setBackendUser(null);
+      syncAttempted.current = false;
+      return syncUserWithBackend(true);
+    }
+  };
 }
