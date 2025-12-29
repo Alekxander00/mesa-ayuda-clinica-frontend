@@ -1,18 +1,20 @@
-// frontend/src/components/auth/AuthChecker.tsx - SIMPLIFICADO
+// frontend/src/components/auth/AuthChecker.tsx - ACTUALIZADO
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useApi } from '@/hooks/useApi';
 
 export default function AuthChecker({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
+  const { isAuthorized } = useApi();
   const router = useRouter();
   const pathname = usePathname();
-  const [loading, setLoading] = useState(true);
+  const [isChecking, setIsChecking] = useState(true);
 
   // Rutas públicas que no requieren autenticación
-  const publicPaths = ['/login', '/unauthorized', '/api/', '/_next/', '/favicon.ico'];
+  const publicPaths = ['/login', '/unauthorized', '/api/', '/_next/', '/favicon.ico', '/auth/'];
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -25,14 +27,14 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
 
       // Si está cargando, esperar
       if (status === 'loading') {
-        setLoading(true);
+        setIsChecking(true);
         return;
       }
 
       // Rutas públicas siempre permitidas
       if (publicPaths.some(path => pathname?.startsWith(path))) {
         console.log('✅ Ruta pública, permitiendo acceso');
-        setLoading(false);
+        setIsChecking(false);
         return;
       }
 
@@ -50,16 +52,23 @@ export default function AuthChecker({ children }: { children: React.ReactNode })
         return;
       }
 
+      // Si el backend dice que no está autorizado, redirigir
+      if (isAuthorized === false) {
+        console.log('🚫 Usuario no autorizado en backend, redirigiendo');
+        router.push('/unauthorized');
+        return;
+      }
+
       // Si hay sesión y no es ruta pública, permitir acceso
       console.log('✅ Sesión válida, permitiendo acceso');
-      setLoading(false);
+      setIsChecking(false);
     };
 
     checkAuth();
-  }, [session, status, pathname, router]);
+  }, [session, status, pathname, router, isAuthorized]);
 
   // Mostrar loading mientras verifica
-  if (loading && !publicPaths.some(path => pathname?.startsWith(path))) {
+  if (isChecking && !publicPaths.some(path => pathname?.startsWith(path))) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">

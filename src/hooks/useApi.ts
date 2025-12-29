@@ -1,8 +1,9 @@
-// frontend/src/hooks/useApi.ts - VERSIÓN OPTIMIZADA
+// frontend/src/hooks/useApi.ts - ACTUALIZAR
 'use client';
 
 import { useSession } from 'next-auth/react';
 import { useCallback, useEffect, useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 export interface BackendUser {
   id: string;
@@ -15,47 +16,69 @@ export interface BackendUser {
 
 export function useApi() {
   const { data: session, update } = useSession();
+  const router = useRouter();
   const [backendUser, setBackendUser] = useState<BackendUser | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  const syncAttempted = useRef(false); // ✅ EVITA SINCronizaciones múltiples
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const syncAttempted = useRef(false);
 
-  const syncUserWithBackend = useCallback(async (force = false) => {
-    // ✅ PREVENIR múltiples sincronizaciones simultáneas
-    if (!session?.user?.email || (isSyncing && !force) || syncAttempted.current) return;
-    
-    syncAttempted.current = true;
-    setIsSyncing(true);
-    
+  const checkBackendAuthorization = useCallback(async (email: string): Promise<BackendUser | null> => {
     try {
-      console.log('🔄 Sincronizando usuario con backend...', session.user.email);
+      console.log('🔐 Verificando autorización en backend para:', email);
       const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
       
       const response = await fetch(`${baseURL}/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-email': session.user.email,
+          'x-user-email': email,
         },
         body: JSON.stringify({
-          email: session.user.email,
-          name: session.user.name,
+          email: email,
+          name: session?.user?.name,
         }),
       });
 
       console.log('📡 Response status:', response.status);
       
+      if (response.status === 403) {
+        console.log('❌ Usuario no autorizado (403)');
+        setIsAuthorized(false);
+        return null;
+      }
+      
       if (response.ok) {
         const userData: BackendUser = await response.json();
-        
-        // ✅ ACTUALIZAR SOLO SI HAY CAMBIOS REALES
+        console.log('✅ Usuario autorizado:', userData);
+        setIsAuthorized(true);
+        return userData;
+      } else {
+        console.error('❌ Error en respuesta del backend:', response.status);
+        setIsAuthorized(false);
+        return null;
+      }
+    } catch (error) {
+      console.error('❌ Error verificando autorización:', error);
+      setIsAuthorized(false);
+      return null;
+    }
+  }, [session]);
+
+  const syncUserWithBackend = useCallback(async (force = false) => {
+    if (!session?.user?.email || (isSyncing && !force) || syncAttempted.current) return;
+    
+    syncAttempted.current = true;
+    setIsSyncing(true);
+    
+    try {
+      const userData = await checkBackendAuthorization(session.user.email);
+      
+      if (userData) {
         setBackendUser(prev => {
           if (JSON.stringify(prev) === JSON.stringify(userData)) return prev;
           return userData;
         });
         
-        console.log('✅ Usuario sincronizado con backend:', userData);
-        
-        // ✅ ACTUALIZAR SESIÓN SOLO SI EL ROL CAMBIÓ
         if (update && userData.role !== session.user.role) {
           console.log('🔄 Actualizando sesión NextAuth con nuevo rol:', userData.role);
           await update({
@@ -68,25 +91,24 @@ export function useApi() {
         }
         return userData;
       } else {
-        const errorText = await response.text();
-        console.error('❌ Error en respuesta del backend:', response.status, errorText);
+        // Usuario no autorizado en backend
+        console.log('🚫 Usuario no autorizado, redirigiendo...');
+        return null;
       }
     } catch (error) {
       console.error('❌ Error sincronizando usuario:', error);
+      return null;
     } finally {
       setIsSyncing(false);
-      // NO resetear syncAttempted aquí para prevenir loops
     }
-    return null;
-  }, [session, update, isSyncing]);
+  }, [session, update, checkBackendAuthorization, isSyncing]);
 
-  // ✅ Sincronización MÁS CONSERVADORA - solo una vez al montar
+  // Efecto para verificar autorización al cargar
   useEffect(() => {
     if (session?.user?.email && !backendUser && !syncAttempted.current) {
-      console.log('🎯 Iniciando sincronización automática...');
+      console.log('🎯 Verificando autorización inicial...');
       syncUserWithBackend();
       
-      // ✅ LIMPIAR el flag después de un tiempo para permitir re-sincronizaciones manuales
       const timer = setTimeout(() => {
         syncAttempted.current = false;
       }, 5000);
@@ -94,6 +116,14 @@ export function useApi() {
       return () => clearTimeout(timer);
     }
   }, [session, backendUser, syncUserWithBackend]);
+
+  // Efecto para redirigir si no está autorizado
+  useEffect(() => {
+    if (isAuthorized === false && session?.user?.email) {
+      console.log('🚫 Usuario no autorizado, redirigiendo a /unauthorized');
+      router.push('/unauthorized');
+    }
+  }, [isAuthorized, session, router]);
 
   const apiRequest = useCallback(async (url: string, options: RequestInit = {}) => {
     const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
@@ -111,6 +141,12 @@ export function useApi() {
         ...options,
         headers,
       });
+
+      if (response.status === 403) {
+        console.log('🔒 Acceso denegado (403) para:', url);
+        setIsAuthorized(false);
+        throw new Error('Acceso denegado');
+      }
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -144,6 +180,7 @@ export function useApi() {
       email: session?.user?.email || '',
       role: (session?.user?.role as any) || 'user'
     },
+    isAuthorized,
     isSyncing,
     refetchUser: () => {
       syncAttempted.current = false;
@@ -151,6 +188,7 @@ export function useApi() {
     },
     forceSync: () => {
       setBackendUser(null);
+      setIsAuthorized(null);
       syncAttempted.current = false;
       return syncUserWithBackend(true);
     }
