@@ -1,68 +1,52 @@
-// frontend/src/services/authService.ts - CORREGIDO PARA v5.0.0
-'use client';
+// frontend/src/services/authService.ts - MODIFICADO
+import axios from 'axios';
 
-import { getSession, signIn } from 'next-auth/react';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-export interface BackendUser {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'technician' | 'user' | 'auditor';
-  department?: string;
-  specialization?: string;
-}
-
-export async function verifyBackendAuth(email: string, name: string): Promise<BackendUser> {
-  const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-  
+export async function verifyBackendAuth(email: string, name?: string) {
   try {
-    console.log('🔐 Verificando/creando usuario en backend:', email);
+    console.log('🔄 Verificando/creando usuario en backend...');
     
-    const response = await fetch(`${baseURL}/auth/verify`, {
+    const response = await fetch(`${API_URL}/auth/sync-user`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-user-email': email,
       },
       body: JSON.stringify({ email, name }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Error ${response.status}: ${errorText}`);
+      if (response.status === 403) {
+        throw new Error('EMAIL_NOT_AUTHORIZED');
+      }
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
-    const userData: BackendUser = await response.json();
-    console.log('✅ Usuario verificado/creado en backend:', userData);
-
-    return userData;
+    const user = await response.json();
+    console.log('✅ Usuario verificado/creado en backend:', user);
+    return user;
   } catch (error) {
     console.error('❌ Error en verifyBackendAuth:', error);
     throw error;
   }
 }
 
-// NUEVA: Función para forzar actualización de sesión en v5.0.0
-export async function refreshUserSession(): Promise<void> {
+export async function checkEmailAuthorization(email: string): Promise<boolean> {
   try {
-    // En NextAuth v5, podemos forzar una revalidación de la sesión
-    // usando signIn con redirect: false o recargando la sesión
-    const session = await getSession();
-    
-    if (session) {
-      console.log('🔄 Sesión actual:', session.user);
-      
-      // Forzar una nueva obtención de la sesión
-      const newSession = await getSession();
-      console.log('🔄 Nueva sesión obtenida:', newSession?.user);
-    }
+    const response = await axios.get(`${API_URL}/auth/check-email/${encodeURIComponent(email)}`);
+    return response.data.isAuthorized;
   } catch (error) {
-    console.error('❌ Error actualizando sesión:', error);
+    console.error('Error verificando autorización de email:', error);
+    return false;
   }
 }
 
-// Alternativa: Forzar recarga de página para refrescar sesión
-export async function hardRefreshSession(): Promise<void> {
-  // Esta es una solución más agresiva pero efectiva
-  window.location.reload();
+export async function refreshUserSession() {
+  try {
+    const response = await axios.get(`${API_URL}/auth/refresh`);
+    return response.data;
+  } catch (error) {
+    console.error('Error refreshing session:', error);
+    throw error;
+  }
 }

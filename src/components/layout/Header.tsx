@@ -6,7 +6,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import RoleProtected from "../auth/RoleProtected";
-import { refreshUserSession, hardRefreshSession } from "@/services/authService";
 import styles from "./Header.module.css";
 import { sessionSyncService } from "@/services/sessionSyncService";
 import { useApi } from "@/hooks/useApi";

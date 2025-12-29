@@ -1,7 +1,7 @@
-// frontend/src/app/layout.tsx - TEMPORAL CON DEBUG
+// frontend/src/app/layout.tsx - MODIFICADO
 import { getServerSession } from 'next-auth';
 import SessionProvider from '@/components/providers/SessionProvider';
-import DebugAuthFinal from '@/components/DebugAuthComplete';
+import AuthChecker from '@/components/auth/AuthChecker';
 import './globals.css';
 
 export const metadata = {
@@ -14,14 +14,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(); 
+  const session = await getServerSession();
 
   return (
     <html lang="es">
       <body>
         <SessionProvider session={session}>
-          
-          {children}
+          <AuthChecker>
+            {children}
+          </AuthChecker>
         </SessionProvider>
       </body>
     </html>
