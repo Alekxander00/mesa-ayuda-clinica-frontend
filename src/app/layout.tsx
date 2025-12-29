@@ -1,8 +1,10 @@
-// frontend/src/app/layout.tsx - MODIFICADO
-import { getServerSession } from 'next-auth';
-import SessionProvider from '@/components/providers/SessionProvider';
-import AuthChecker from '@/components/auth/AuthChecker';
+// frontend/src/app/layout.tsx - SIMPLIFICADO
 import './globals.css';
+import { Inter } from 'next/font/google';
+import SessionProvider from '@/components/providers/SessionProvider';
+import { getServerSession } from 'next-auth';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
   title: 'Mesa de Ayuda Clínica',
@@ -18,11 +20,10 @@ export default async function RootLayout({
 
   return (
     <html lang="es">
-      <body>
+      <body className={inter.className}>
         <SessionProvider session={session}>
-          <AuthChecker>
-            {children}
-          </AuthChecker>
+          {/* ✅ REMOVER AuthChecker temporalmente para debugging */}
+          {children}
         </SessionProvider>
       </body>
     </html>
