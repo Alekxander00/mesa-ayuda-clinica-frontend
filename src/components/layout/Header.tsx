@@ -1,20 +1,16 @@
-// frontend/src/components/layout/Header.tsx - ACTUALIZADO CON CSS MODULES
+// frontend/src/components/layout/Header.tsx - ACTUALIZADO
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import RoleProtected from "../auth/RoleProtected";
-import styles from "./Header.module.css";
-import { sessionSyncService } from "@/services/sessionSyncService";
-import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Header() {
-  const { backendUser, forceSync } = useApi();
-  const { data: session, update } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const { user, refresh } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -31,12 +27,11 @@ export default function Header() {
       current: pathname === "/tickets/new",
     },
   ];
-  
 
   const adminNavigation = [
+    { name: "✉️ Correos Autorizados", href: "/admin/authorized-emails", current: pathname === "/admin/authorized-emails" },
     { name: "👥 Usuarios", href: "/users", current: pathname === "/users" },
     { name: "📊 Reportes", href: "/reports", current: pathname === "/reports" },
-    { name: "✉️ Correos Autorizados", href: "/admin/authorized-emails", current: pathname === "/admin/authorized-emails" }, // NUEVO
   ];
 
   const technicianNavigation = [
@@ -57,145 +52,134 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleProfileClick = async () => {
-    if (update) {
-      await update();
-    }
+  const handleProfileClick = () => {
     setIsProfileOpen(!isProfileOpen);
   };
 
   const handleRefreshRole = async () => {
     console.log("🔄 Forzando actualización de rol...");
-    await forceSync();
-    window.location.reload(); // Recargar para aplicar cambios
+    await refresh();
   };
 
   const handleSignOut = async () => {
-    // Limpiar cache al cerrar sesión
-    sessionSyncService.clearCache();
     await signOut({ redirect: false });
     router.push("/login");
   };
 
   return (
-    <header className={styles.header}>
-      <div className={styles.container}>
-        <div className={styles.innerContainer}>
+    <header className="bg-white shadow-sm border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
           {/* Logo y Navegación */}
-          <div className={styles.logoContainer}>
-            <Link href="/dashboard" className={styles.logo}>
-              <div className={styles.logoIcon}>
-                <span className={styles.logoText}>🏥</span>
+          <div className="flex items-center">
+            <Link href="/dashboard" className="flex items-center space-x-3">
+              <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-lg">🏥</span>
               </div>
               <div>
-                <h1 className={styles.logoTitle}>Mesa de Ayuda</h1>
-                <p className={styles.logoSubtitle}>Sistema Clínico</p>
+                <h1 className="text-lg font-bold text-gray-900">Mesa de Ayuda</h1>
+                <p className="text-xs text-gray-500">Sistema Clínico</p>
               </div>
             </Link>
 
-            <nav className={styles.nav}>
+            <nav className="ml-8 flex space-x-4">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`${styles.navItem} ${
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
                     item.current
-                      ? styles.navItemCurrent
-                      : styles.navItemNotCurrent
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                   }`}
                 >
-                  <span>{item.name}</span>
+                  {item.name}
                 </Link>
               ))}
 
-              <RoleProtected allowedRoles={["admin"]}>
-                {adminNavigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`${styles.navItem} ${
-                      item.current
-                        ? styles.navItemCurrent
-                        : styles.navItemNotCurrent
-                    }`}
-                  >
-                    <span>{item.name}</span>
-                  </Link>
-                ))}
-              </RoleProtected>
+              {user?.role === "admin" && adminNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    item.current
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
 
-              <RoleProtected allowedRoles={["technician", "admin"]}>
-                {technicianNavigation.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={`${styles.navItem} ${
-                      item.current
-                        ? styles.navItemCurrent
-                        : styles.navItemNotCurrent
-                    }`}
-                  >
-                    <span>{item.name}</span>
-                  </Link>
-                ))}
-              </RoleProtected>
+              {(user?.role === "technician" || user?.role === "admin") && technicianNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                    item.current
+                      ? "bg-blue-50 text-blue-700"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              ))}
             </nav>
           </div>
 
           {/* Usuario y Menú */}
-          <div className={styles.userSection}>
-            {session ? (
-              <div className={styles.userDropdown} ref={dropdownRef}>
+          <div className="flex items-center">
+            {user ? (
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={handleProfileClick}
-                  className={styles.userButton}
+                  className="flex items-center space-x-3 rounded-lg p-2 hover:bg-gray-50"
                 >
-                  <div className={styles.userInfo}>
-                    <span className={styles.userName}>
-                      {session.user?.name}
-                    </span>
-                    <span className={styles.userRole}>
-                      {backendUser?.role || session?.user?.role}
-                    </span>
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                    <p className="text-xs text-gray-500 capitalize">{user.role}</p>
                   </div>
-                  <div className={styles.userAvatar}>
-                    <span className={styles.userInitial}>
-                      {session.user?.name?.charAt(0).toUpperCase()}
+                  <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">
+                      {user.name?.charAt(0).toUpperCase()}
                     </span>
                   </div>
                 </button>
 
                 {/* Dropdown Menu */}
                 {isProfileOpen && (
-                  <div className={styles.dropdown}>
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                     <button
                       onClick={handleRefreshRole}
-                      className={styles.dropdownItem}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
-                      <span>🔄</span>
-                      <span>Actualizar Rol</span>
+                      <span className="mr-2">🔄</span>
+                      Actualizar Rol
                     </button>
                     <Link
                       href="/profile"
-                      className={styles.dropdownItem}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                       onClick={() => setIsProfileOpen(false)}
                     >
-                      <span>👤</span>
-                      <span>Mi Perfil</span>
+                      <span className="mr-2">👤</span>
+                      Mi Perfil
                     </Link>
-                    <div className={styles.divider}></div>
+                    <div className="border-t border-gray-100 my-1"></div>
                     <button
                       onClick={handleSignOut}
-                      className={styles.dropdownItem}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
-                      <span>🚪</span>
-                      <span>Cerrar Sesión</span>
+                      <span className="mr-2">🚪</span>
+                      Cerrar Sesión
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link href="/login" className={styles.userButton}>
+              <Link 
+                href="/login" 
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+              >
                 Iniciar Sesión
               </Link>
             )}
