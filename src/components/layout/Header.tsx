@@ -32,10 +32,12 @@ export default function Header() {
       current: pathname === "/tickets/new",
     },
   ];
+  
 
   const adminNavigation = [
     { name: "👥 Usuarios", href: "/users", current: pathname === "/users" },
     { name: "📊 Reportes", href: "/reports", current: pathname === "/reports" },
+    { name: "✉️ Correos Autorizados", href: "/admin/authorized-emails", current: pathname === "/admin/authorized-emails" }, // NUEVO
   ];
 
   const technicianNavigation = [
