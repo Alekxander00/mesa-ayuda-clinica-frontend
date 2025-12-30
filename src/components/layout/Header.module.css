@@ -1,13 +1,16 @@
 /* =========================
-   HEADER BASE - VERSIÓN ORIGINAL
+   HEADER BASE - VERSIÓN FIXED
 ========================= */
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 50;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
 .container {
@@ -54,15 +57,24 @@
   font-weight: bold;
 }
 
+.logoContent {
+  display: flex;
+  flex-direction: column;
+}
+
 .logoTitle {
   font-size: 1rem;
   font-weight: 600;
   color: #0f172a;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .logoSubtitle {
   font-size: 0.7rem;
   color: #64748b;
+  margin: 0;
+  line-height: 1.2;
 }
 
 /* =========================
@@ -124,6 +136,10 @@
   .userSection {
     display: none;
   }
+}
+
+.userDropdown {
+  position: relative;
 }
 
 .userButton {
@@ -382,5 +398,12 @@
   .header * {
     animation: none !important;
     transition: none !important;
+  }
+  
+  .userButton:hover,
+  .navItem:hover,
+  .loginButton:hover,
+  .dropdownItem:hover {
+    transform: none !important;
   }
 }
