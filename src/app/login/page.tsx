@@ -1,24 +1,64 @@
-// frontend/src/app/login/page.tsx - ACTUALIZADO CON CSS MODULES
+// frontend/src/app/login/page.tsx - ACTUALIZADO
 "use client";
 
 import { useState } from "react";
-import { authService } from "@/services/authService";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 import AnimatedBackground from "@/components/Animated/AnimatedBackground";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const router = useRouter();
+
+  const checkEmailAuthorization = async (email: string): Promise<boolean> => {
+    try {
+      const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
+      
+      const response = await fetch(`${baseURL}/auth/check-email/${encodeURIComponent(email)}`);
+      
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = await response.json();
+      return data.isAuthorized;
+    } catch (err) {
+      console.error('❌ Error verificando autorización:', err);
+      return false;
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       setError("");
 
-      console.log("🔐 Iniciando login...");
-      await authService.loginWithGoogle();
+      console.log("🔐 Iniciando login con Google...");
 
-      // NextAuth manejará la redirección automáticamente
+      // Iniciar sesión con Google
+      const result = await signIn("google", {
+        redirect: false,
+        callbackUrl: "/dashboard",
+      });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      if (result?.ok) {
+        console.log("✅ Login con Google exitoso");
+        
+        // Esperar un momento para que la sesión se establezca
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Obtener el email del usuario desde la sesión (esto se haría normalmente después del login)
+        // En un caso real, NextAuth maneja esto automáticamente
+        
+        // Redirigir a dashboard - el AuthProvider se encargará de verificar la autorización
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       console.error("❌ Error en login:", err);
       setError(err.message || "Error al iniciar sesión");
@@ -91,8 +131,8 @@ export default function LoginPage() {
 
           <div className={styles.footer}>
             <p>
-              Al iniciar sesión, se creará automáticamente tu cuenta en el
-              sistema.
+              Solo los correos autorizados pueden acceder al sistema.
+              Contacta al administrador si necesitas acceso.
             </p>
           </div>
         </div>

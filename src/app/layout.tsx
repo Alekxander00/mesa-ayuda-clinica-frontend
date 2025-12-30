@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import SessionProvider from '@/components/providers/SessionProvider';
 import AuthProvider from '@/components/providers/AuthProvider';
 import { getServerSession } from 'next-auth';
+import { ApiErrorHandler } from '@/components/providers/ApiErrorHandler';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,7 +24,11 @@ export default async function RootLayout({
     <html lang="es">
       <body className={inter.className}>
         <SessionProvider session={session}>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <ApiErrorHandler>
+              {children}
+            </ApiErrorHandler>
+          </AuthProvider>
         </SessionProvider>
       </body>
     </html>

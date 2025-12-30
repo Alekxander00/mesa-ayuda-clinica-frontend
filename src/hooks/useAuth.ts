@@ -1,76 +1,119 @@
-// frontend/src/hooks/useAuth.ts - CORREGIDO
+// frontend/src/hooks/useAuth.ts - ACTUALIZADO
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { authService, BackendUser } from '@/services/authService';
+
+interface BackendUser {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  email_verified: boolean;
+}
 
 export function useAuth() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const [user, setUser] = useState<BackendUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const checkAuth = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const syncUserWithBackend = useCallback(async () => {
+    if (!session?.user?.email) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
 
     try {
-      if (status === 'loading') {
-        return;
+      setLoading(true);
+      setError(null);
+
+      const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
+      
+      // 1. Primero verificar si el email está autorizado
+      const checkResponse = await fetch(`${baseURL}/auth/check-email/${encodeURIComponent(session.user.email)}`);
+      
+      if (!checkResponse.ok) {
+        throw new Error(`Error ${checkResponse.status}: ${await checkResponse.text()}`);
       }
 
-      if (status === 'unauthenticated') {
-        console.log('🔐 No autenticado');
+      const checkData = await checkResponse.json();
+      
+      if (!checkData.isAuthorized) {
+        setError('EMAIL_NOT_AUTHORIZED');
         setUser(null);
-        setLoading(false);
         return;
       }
 
-      if (session?.user?.email) {
-        console.log('🔐 Usuario autenticado, verificando con backend:', session.user.email);
-        
-        try {
-          const backendUser = await authService.verifyUserInBackend(
-            session.user.email, 
-            session.user.name
-          );
-          
-          setUser(backendUser);
-          console.log('✅ Usuario verificado:', backendUser);
-        } catch (error: any) {
-          console.error('❌ Error verificando usuario:', error);
-          
-          if (error.message === 'EMAIL_NOT_AUTHORIZED') {
-            setError('EMAIL_NOT_AUTHORIZED');
-            router.push('/unauthorized');
-          } else {
-            setError(error.message);
-          }
-        }
+      // 2. Sincronizar usuario con el backend
+      const syncResponse = await fetch(`${baseURL}/auth/sync-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-email': session.user.email,
+        },
+        body: JSON.stringify({
+          email: session.user.email,
+          name: session.user.name || session.user.email.split('@')[0]
+        }),
+      });
+
+      if (!syncResponse.ok) {
+        throw new Error(`Error ${syncResponse.status}: ${await syncResponse.text()}`);
+      }
+
+      const userData = await syncResponse.json();
+      setUser(userData);
+      
+    } catch (err: any) {
+      console.error('❌ Error en syncUserWithBackend:', err);
+      setError(err.message || 'Error de autenticación');
+      
+      // Si es error 403, marcar como no autorizado
+      if (err.message.includes('403')) {
+        setError('EMAIL_NOT_AUTHORIZED');
       }
     } finally {
       setLoading(false);
     }
-  }, [session, status, router]);
+  }, [session]);
+
+  const checkEmailAuthorization = useCallback(async (email: string): Promise<boolean> => {
+    try {
+      const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
+      
+      const response = await fetch(`${baseURL}/auth/check-email/${encodeURIComponent(email)}`);
+      
+      if (!response.ok) {
+        return false;
+      }
+
+      const data = await response.json();
+      return data.isAuthorized;
+    } catch (err) {
+      console.error('❌ Error verificando autorización:', err);
+      return false;
+    }
+  }, []);
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    if (status === 'loading') return;
+
+    if (status === 'unauthenticated') {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    syncUserWithBackend();
+  }, [session, status, syncUserWithBackend]);
 
   return {
     user,
-    loading: loading || status === 'loading',
+    loading,
     error,
-    isAuthenticated: !!user,
-    isAdmin: user?.role === 'admin',
-    isTechnician: user?.role === 'technician' || user?.role === 'admin',
-    refresh: async () => {
-      authService.clearCache(session?.user?.email);
-      setUser(null);
-      await checkAuth();
-    }
+    syncUserWithBackend,
+    checkEmailAuthorization,
   };
 }

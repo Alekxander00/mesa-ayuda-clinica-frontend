@@ -11,7 +11,7 @@ import styles from "./Header.module.css";
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, refresh } = useAuth();
+  const { user } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -54,10 +54,7 @@ export default function Header() {
     setIsProfileOpen(!isProfileOpen);
   };
 
-  const handleRefreshRole = async () => {
-    console.log("🔄 Forzando actualización de rol...");
-    await refresh();
-  };
+  
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
@@ -157,14 +154,6 @@ export default function Header() {
                     
                     <div className={styles.dropdownDivider}></div>
                     
-                    <button
-                      onClick={handleRefreshRole}
-                      className={styles.dropdownItem}
-                      role="menuitem"
-                    >
-                      <span className={styles.dropdownItemIcon}>🔄</span>
-                      <span>Actualizar Rol</span>
-                    </button>
                     <Link
                       href="/profile"
                       className={styles.dropdownItem}

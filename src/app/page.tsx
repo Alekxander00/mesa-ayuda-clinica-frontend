@@ -1,4 +1,4 @@
-// frontend/src/app/login/page.tsx - CORREGIDO
+// frontend/src/app/page.tsx - CORREGIDO
 'use client';
 
 import { signIn, getSession } from 'next-auth/react';
@@ -28,6 +28,7 @@ export default function LoginPage() {
 
     checkExistingAuth();
   }, [router]);
+
 
   const handleGoogleSignIn = async () => {
     try {
