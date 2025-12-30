@@ -9,7 +9,7 @@ import { ApiErrorHandler } from '@/components/providers/ApiErrorHandler';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Mesa de Ayuda',
+  title: 'Mesa de Ayuda ALXO',
   description: 'Sistema de gestión de tickets',
 };
 
