@@ -1,4 +1,4 @@
-// frontend/src/services/authService.ts - ACTUALIZADO Y UNIFICADO
+// frontend/src/services/authService.ts - ACTUALIZADO CON TODAS LAS EXPORTACIONES
 'use client';
 
 import { getSession, signIn } from 'next-auth/react';
@@ -117,4 +117,9 @@ class AuthService {
   }
 }
 
+// Crear y exportar la instancia
 export const authService = AuthService.getInstance();
+
+// También exportar funciones individuales para compatibilidad
+export const verifyBackendAuth = (email: string, name?: string) => 
+  authService.verifyUserInBackend(email, name);
