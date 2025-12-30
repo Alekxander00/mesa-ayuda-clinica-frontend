@@ -32,9 +32,9 @@ export default function LoginPage() {
           <div className={styles.logoIcon}>
             <img src="../favicon.ico" alt="Logo" />
           </div>
-          <h1 className={styles.title}>Mesa de Ayuda Clínica</h1>
+          <h1 className={styles.title}>Mesa de Ayuda ALXO</h1>
           <p className={styles.subtitle}>
-            Sistema de gestión de tickets médicos
+            Sistema de gestión de tickets
           </p>
         </div>
 
