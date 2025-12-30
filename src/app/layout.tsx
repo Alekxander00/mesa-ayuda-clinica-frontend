@@ -9,8 +9,8 @@ import { ApiErrorHandler } from '@/components/providers/ApiErrorHandler';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
-  title: 'Mesa de Ayuda Clínica',
-  description: 'Sistema de gestión de tickets médicos',
+  title: 'Mesa de Ayuda',
+  description: 'Sistema de gestión de tickets',
 };
 
 export default async function RootLayout({
