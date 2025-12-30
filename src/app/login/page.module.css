@@ -1,6 +1,4 @@
-/* ================================
-   CONTENEDOR GENERAL
-================================ */
+
 .container {
   min-height: 100vh;
   display: grid;
@@ -20,7 +18,7 @@
   animation: backgroundMove 12s ease-in-out infinite alternate;
 }
 
-/* Fondo vivo pero elegante */
+
 @keyframes backgroundMove {
   from {
     background-position: 0% 0%, 100% 100%, center;
@@ -30,9 +28,6 @@
   }
 }
 
-/* ================================
-   TARJETA
-================================ */
 .card {
   width: 100%;
   max-width: 26rem;
@@ -57,9 +52,7 @@
   }
 }
 
-/* ================================
-   LOGO
-================================ */
+
 .logo {
   display: flex;
   flex-direction: column;
@@ -105,9 +98,7 @@
   color: #64748b;
 }
 
-/* ================================
-   BOTÓN GOOGLE
-================================ */
+
 .googleButton {
   width: 100%;
   margin-top: 1.5rem;
@@ -202,11 +193,9 @@
   color: #64748b;
 }
 
-/* ================================
-   ACCESIBILIDAD
-================================ */
+
 @media (prefers-reduced-motion: reduce) {
-  * {
+  .container * {
     animation: none !important;
     transition: none !important;
   }
