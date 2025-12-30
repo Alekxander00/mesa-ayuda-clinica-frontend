@@ -1,3 +1,4 @@
+// frontend/src/components/layout/Header.tsx - CON CSS MODULE
 "use client";
 
 import { signOut } from "next-auth/react";
@@ -12,9 +13,7 @@ export default function Header() {
   const router = useRouter();
   const { user } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const navigation = [
     {
@@ -32,15 +31,18 @@ export default function Header() {
 
   const adminNavigation = [
     { name: "✉️ Correos Autorizados", href: "/admin/authorized-emails", current: pathname === "/admin/authorized-emails" },
+    
   ];
+
+  
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsProfileOpen(false);
-      }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
-        setIsMobileMenuOpen(false);
       }
     };
 
@@ -52,25 +54,18 @@ export default function Header() {
     setIsProfileOpen(!isProfileOpen);
   };
 
-  const handleMobileMenuClick = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  
 
   const handleSignOut = async () => {
     await signOut({ redirect: false });
     router.push("/login");
   };
 
-  // Cerrar menú móvil al hacer clic en un enlace
-  const handleMobileLinkClick = () => {
-    setIsMobileMenuOpen(false);
-  };
-
   return (
     <header className={styles.header}>
       <div className={styles.container}>
         <div className={styles.innerContainer}>
-          {/* Logo y Navegación Desktop */}
+          {/* Logo y Navegación */}
           <div className={styles.logoContainer}>
             <Link 
               href="/dashboard" 
@@ -86,8 +81,7 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* Navegación Desktop */}
-            <nav className={styles.navDesktop} aria-label="Navegación principal">
+            <nav className={styles.nav} aria-label="Navegación principal">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
@@ -113,24 +107,12 @@ export default function Header() {
                   {item.name}
                 </Link>
               ))}
+
+            
             </nav>
           </div>
 
-          {/* Botón Hamburguesa para Móvil */}
-          <button 
-            className={styles.mobileMenuButton}
-            onClick={handleMobileMenuClick}
-            aria-label="Abrir menú de navegación"
-            aria-expanded={isMobileMenuOpen}
-          >
-            <div className={`${styles.hamburger} ${isMobileMenuOpen ? styles.hamburgerOpen : ''}`}>
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </button>
-
-          {/* Usuario y Menú Desktop */}
+          {/* Usuario y Menú */}
           <div className={styles.userSection}>
             {user ? (
               <div className={styles.userDropdown} ref={dropdownRef}>
@@ -205,109 +187,6 @@ export default function Header() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Menú Móvil Overlay */}
-      {isMobileMenuOpen && (
-        <div className={styles.mobileOverlay} onClick={() => setIsMobileMenuOpen(false)}></div>
-      )}
-
-      {/* Menú Móvil */}
-      <div 
-        ref={mobileMenuRef}
-        className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}
-      >
-        <div className={styles.mobileMenuHeader}>
-          <div className={styles.mobileUserInfo}>
-            {user ? (
-              <>
-                <div className={styles.mobileUserAvatar}>
-                  <span className={styles.mobileUserInitial}>
-                    {user.name?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div>
-                  <p className={styles.mobileUserName}>{user.name}</p>
-                  <p className={styles.mobileUserRole}>{user.role}</p>
-                </div>
-              </>
-            ) : (
-              <p className={styles.mobileNotLoggedIn}>No has iniciado sesión</p>
-            )}
-          </div>
-          <button 
-            className={styles.mobileCloseButton}
-            onClick={() => setIsMobileMenuOpen(false)}
-            aria-label="Cerrar menú"
-          >
-            <span>×</span>
-          </button>
-        </div>
-
-        <nav className={styles.mobileNav}>
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`${styles.mobileNavItem} ${
-                item.current ? styles.mobileNavItemCurrent : ''
-              }`}
-              onClick={handleMobileLinkClick}
-              aria-current={item.current ? "page" : undefined}
-            >
-              {item.name}
-            </Link>
-          ))}
-
-          {user?.role === "admin" && adminNavigation.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={`${styles.mobileNavItem} ${
-                item.current ? styles.mobileNavItemCurrent : ''
-              }`}
-              onClick={handleMobileLinkClick}
-              aria-current={item.current ? "page" : undefined}
-            >
-              {item.name}
-            </Link>
-          ))}
-
-          <div className={styles.mobileDivider}></div>
-
-          {user ? (
-            <>
-              <Link
-                href="/profile"
-                className={styles.mobileNavItem}
-                onClick={handleMobileLinkClick}
-              >
-                <span className={styles.mobileNavIcon}>👤</span>
-                Mi Perfil
-              </Link>
-              
-              <button
-                onClick={() => {
-                  handleSignOut();
-                  handleMobileLinkClick();
-                }}
-                className={`${styles.mobileNavItem} ${styles.mobileNavItemDanger}`}
-              >
-                <span className={styles.mobileNavIcon}>🚪</span>
-                Cerrar Sesión
-              </button>
-            </>
-          ) : (
-            <Link
-              href="/login"
-              className={styles.mobileNavItem}
-              onClick={handleMobileLinkClick}
-            >
-              <span className={styles.mobileNavIcon}>🔑</span>
-              Iniciar Sesión
-            </Link>
-          )}
-        </nav>
       </div>
     </header>
   );
