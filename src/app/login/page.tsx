@@ -30,7 +30,7 @@ export default function LoginPage() {
       <div className={styles.card}>
         <div className={styles.logo}>
           <div className={styles.logoIcon}>
-            <img src="/icon.ico" alt="Logo" />
+            <img src="../favicon.ico" alt="Logo" />
           </div>
           <h1 className={styles.title}>Mesa de Ayuda Clínica</h1>
           <p className={styles.subtitle}>
