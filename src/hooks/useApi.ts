@@ -1,4 +1,4 @@
-// frontend/src/hooks/useApi.ts - ACTUALIZADO CON COMPATIBILIDAD
+// frontend/src/hooks/useApi.ts - VERSIÓN QUE FUNCIONABA + MANEJO 403
 'use client';
 
 import { useSession } from 'next-auth/react';
@@ -29,12 +29,51 @@ export function useApi() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ API Error:', response.status, errorText);
+        
+        // AGREGAR MANEJO ESPECÍFICO PARA ERROR 403
+        if (response.status === 403) {
+          console.log('🚫 Error 403 detectado - Verificando si es por autorización de correo');
+          
+          // Intentar parsear el error para ver si es específico de autorización
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.code === 'EMAIL_NOT_AUTHORIZED' || 
+                errorData.message?.includes('no está autorizado') ||
+                errorData.error?.includes('Acceso denegado')) {
+              
+              console.log('📤 Redirigiendo a /unauthorized desde API error 403');
+              // Usar window.location para redirigir inmediatamente
+              window.location.href = '/unauthorized';
+              return null; // Detener la ejecución
+            }
+          } catch (parseError) {
+            // Si no se puede parsear, verificar si el texto contiene palabras clave
+            if (errorText.includes('no está autorizado') || 
+                errorText.includes('Acceso denegado') ||
+                errorText.includes('EMAIL_NOT_AUTHORIZED')) {
+              
+              console.log('📤 Redirigiendo a /unauthorized (texto plano)');
+              window.location.href = '/unauthorized';
+              return null;
+            }
+          }
+        }
+        
         throw new Error(`Error ${response.status}: ${errorText}`);
       }
 
       return response.json();
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ useApi - Error:', error);
+      
+      // También verificar si el error lanzado contiene palabras clave
+      if (error.message.includes('EMAIL_NOT_AUTHORIZED') || 
+          error.message.includes('no está autorizado') ||
+          error.message.includes('403')) {
+        console.log('📤 Redirigiendo a /unauthorized desde catch');
+        window.location.href = '/unauthorized';
+      }
+      
       throw error;
     }
   };
