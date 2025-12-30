@@ -31,13 +31,10 @@ export default function Header() {
 
   const adminNavigation = [
     { name: "✉️ Correos Autorizados", href: "/admin/authorized-emails", current: pathname === "/admin/authorized-emails" },
-    { name: "👥 Usuarios", href: "/users", current: pathname === "/users" },
-    { name: "📊 Reportes", href: "/reports", current: pathname === "/reports" },
+    
   ];
 
-  const technicianNavigation = [
-    { name: "🔧 Soporte", href: "/support", current: pathname === "/support" },
-  ];
+  
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -114,18 +111,7 @@ export default function Header() {
                 </Link>
               ))}
 
-              {(user?.role === "technician" || user?.role === "admin") && technicianNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`${styles.navItem} ${
-                    item.current ? styles.navItemCurrent : styles.navItemNotCurrent
-                  }`}
-                  aria-current={item.current ? "page" : undefined}
-                >
-                  {item.name}
-                </Link>
-              ))}
+            
             </nav>
           </div>
 
