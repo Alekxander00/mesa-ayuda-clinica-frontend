@@ -17,7 +17,6 @@ export default function UnauthorizedPage() {
   return (
     <>
       <AnimatedBackground />
-      <div className={styles.animatedBackground}></div>
       
       <div className={styles.container}>
         <div className={styles.card}>
