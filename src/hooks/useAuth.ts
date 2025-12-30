@@ -1,4 +1,4 @@
-// frontend/src/hooks/useAuth.ts - VERSIÓN DEFINITIVA
+// frontend/src/hooks/useAuth.ts - CORREGIDO
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -40,20 +40,11 @@ export function useAuth() {
           
           setUser(backendUser);
           console.log('✅ Usuario verificado:', backendUser);
-          
-          // Guardar en localStorage para persistencia
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('backend-user', JSON.stringify(backendUser));
-          }
         } catch (error: any) {
           console.error('❌ Error verificando usuario:', error);
           
           if (error.message === 'EMAIL_NOT_AUTHORIZED') {
             setError('EMAIL_NOT_AUTHORIZED');
-            // Limpiar localStorage si hay error
-            if (typeof window !== 'undefined') {
-              localStorage.removeItem('backend-user');
-            }
             router.push('/unauthorized');
           } else {
             setError(error.message);
@@ -66,32 +57,8 @@ export function useAuth() {
   }, [session, status, router]);
 
   useEffect(() => {
-    // Intentar cargar usuario desde localStorage primero
-    if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('backend-user');
-      if (savedUser && !user && !loading) {
-        try {
-          const parsedUser = JSON.parse(savedUser);
-          console.log('📂 Cargando usuario desde localStorage:', parsedUser.email);
-          setUser(parsedUser);
-          setLoading(false);
-          return;
-        } catch (e) {
-          console.error('Error cargando usuario desde localStorage:', e);
-        }
-      }
-    }
-
     checkAuth();
-  }, [checkAuth, user, loading]);
-
-  // Escuchar cambios en la sesión
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user?.email && !user) {
-      console.log('🔄 Sesión cambió, verificando usuario...');
-      checkAuth();
-    }
-  }, [status, session, user, checkAuth]);
+  }, [checkAuth]);
 
   return {
     user,
@@ -103,9 +70,6 @@ export function useAuth() {
     refresh: async () => {
       authService.clearCache(session?.user?.email);
       setUser(null);
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('backend-user');
-      }
       await checkAuth();
     }
   };

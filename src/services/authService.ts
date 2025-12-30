@@ -1,21 +1,50 @@
-// frontend/src/services/authService.ts - VERIFICAR QUE TENGA ESTO
+// frontend/src/services/authService.ts - ACTUALIZADO CON TODAS LAS EXPORTACIONES
 'use client';
 
 import { getSession, signIn } from 'next-auth/react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export interface BackendUser {
   id: string;
   name: string;
   email: string;
   role: 'admin' | 'technician' | 'user' | 'auditor';
-  email_verified: boolean;
+  department?: string;
+  specialization?: string;
 }
 
 class AuthService {
+  private static instance: AuthService;
   private cache: Map<string, { user: BackendUser; timestamp: number }> = new Map();
   private CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+  static getInstance(): AuthService {
+    if (!AuthService.instance) {
+      AuthService.instance = new AuthService();
+    }
+    return AuthService.instance;
+  }
+
+  async loginWithGoogle() {
+    try {
+      console.log('🔐 Iniciando login con Google...');
+      
+      const result = await signIn('google', {
+        redirect: false,
+        callbackUrl: '/dashboard'
+      });
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('❌ Error en login:', error);
+      throw error;
+    }
+  }
 
   async verifyUserInBackend(email: string, name?: string): Promise<BackendUser> {
     try {
@@ -28,21 +57,7 @@ class AuthService {
 
       console.log('🔄 Verificando usuario en backend:', email);
       
-      // PRIMERO: Verificar si el email está autorizado
-      const checkResponse = await fetch(`${API_URL}/auth/check-email/${encodeURIComponent(email)}`);
-      
-      if (!checkResponse.ok) {
-        throw new Error(`Error ${checkResponse.status}: ${await checkResponse.text()}`);
-      }
-
-      const checkData = await checkResponse.json();
-      
-      if (!checkData.isAuthorized) {
-        throw new Error('EMAIL_NOT_AUTHORIZED');
-      }
-
-      // SEGUNDO: Sincronizar usuario
-      const syncResponse = await fetch(`${API_URL}/auth/sync-user`, {
+      const response = await fetch(`${API_URL}/auth/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,14 +66,14 @@ class AuthService {
         body: JSON.stringify({ email, name }),
       });
 
-      if (!syncResponse.ok) {
-        if (syncResponse.status === 403) {
+      if (!response.ok) {
+        if (response.status === 403) {
           throw new Error('EMAIL_NOT_AUTHORIZED');
         }
-        throw new Error(`Error ${syncResponse.status}: ${await syncResponse.text()}`);
+        throw new Error(`Error ${response.status}: ${await response.text()}`);
       }
 
-      const userData: BackendUser = await syncResponse.json();
+      const userData: BackendUser = await response.json();
       
       // Guardar en cache
       this.cache.set(email, {
@@ -72,10 +87,6 @@ class AuthService {
       console.error('❌ Error verificando usuario:', error);
       throw error;
     }
-  }
-
-  async loginWithGoogle() {
-    return await signIn('google', { callbackUrl: '/dashboard' });
   }
 
   async getCurrentUser(): Promise<BackendUser | null> {
@@ -99,10 +110,16 @@ class AuthService {
       this.cache.clear();
     }
   }
+
+  async logout() {
+    this.clearCache();
+    // La redirección se manejará en el componente
+  }
 }
 
-export const authService = new AuthService();
+// Crear y exportar la instancia
+export const authService = AuthService.getInstance();
 
-// Función de compatibilidad
+// También exportar funciones individuales para compatibilidad
 export const verifyBackendAuth = (email: string, name?: string) => 
   authService.verifyUserInBackend(email, name);
