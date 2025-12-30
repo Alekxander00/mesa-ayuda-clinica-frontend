@@ -1,28 +1,27 @@
-// frontend/src/hooks/usePermissions.ts - VERSIÓN OPTIMIZADA
+// frontend/src/hooks/usePermissions.ts - VERSIÓN COMPATIBLE
 'use client';
 
-import { useApi } from './useApi';
+import { useAuth } from './useAuth';
 import { useSession } from 'next-auth/react';
 import { useMemo } from 'react';
 
 export function usePermissions() {
-  const { session, backendUser } = useApi();
-  const { data: nextAuthSession } = useSession();
+  const { user } = useAuth();
+  const { data: session } = useSession();
 
-  // ✅ USAR useMemo PARA EVITAR OBJETOS NUEVOS EN CADA RENDER
   const permissions = useMemo(() => {
-    // Prioridad: backendUser > session > nextAuthSession
-    const effectiveRole = backendUser?.role || session?.user?.role || nextAuthSession?.user?.role || 'user';
-    const effectiveUser = backendUser || session?.user || nextAuthSession?.user;
+    // Prioridad: usuario de useAuth (backend) > sesión de NextAuth
+    const effectiveUser = user || session?.user;
+    const effectiveRole = user?.role || session?.user?.role || 'user';
 
     return {
-      // Roles
+      // Roles (los que ya tenías)
       isAdmin: effectiveRole === 'admin',
       isTechnician: effectiveRole === 'technician' || effectiveRole === 'admin',
       isUser: effectiveRole === 'user',
       isAuditor: effectiveRole === 'auditor',
       
-      // Permisos específicos
+      // Permisos específicos (los que ya tenías)
       canViewAllTickets: effectiveRole === 'admin' || effectiveRole === 'technician' || effectiveRole === 'auditor',
       canEditTickets: effectiveRole === 'admin' || effectiveRole === 'technician',
       canDeleteTickets: effectiveRole === 'admin',
@@ -35,9 +34,14 @@ export function usePermissions() {
       // Usuario
       user: effectiveUser,
       role: effectiveRole,
-      email: effectiveUser?.email
+      email: effectiveUser?.email,
+      
+      // Mantener compatibilidad con componentes existentes
+      hasRole: (requiredRole: string) => effectiveRole === requiredRole,
+      hasAnyRole: (roles: string[]) => roles.includes(effectiveRole),
+      isAuthenticated: !!effectiveUser,
     };
-  }, [backendUser, session, nextAuthSession]); // ✅ SOLO se recalcula cuando cambian estas dependencias
+  }, [user, session]);
 
   return permissions;
 }
