@@ -1,10 +1,10 @@
-// frontend/src/app/layout.tsx - ACTUALIZADO
+// frontend/src/app/layout.tsx - VERSIÓN FINAL
 import './globals.css';
 import { Inter } from 'next/font/google';
 import SessionProvider from '@/components/providers/SessionProvider';
 import AuthProvider from '@/components/providers/AuthProvider';
+import AuthInitializer from '@/components/providers/AuthInitializer';
 import { getServerSession } from 'next-auth';
-import { ApiErrorHandler } from '@/components/providers/ApiErrorHandler';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,9 +25,9 @@ export default async function RootLayout({
       <body className={inter.className}>
         <SessionProvider session={session}>
           <AuthProvider>
-            <ApiErrorHandler>
+            <AuthInitializer>
               {children}
-            </ApiErrorHandler>
+            </AuthInitializer>
           </AuthProvider>
         </SessionProvider>
       </body>

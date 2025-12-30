@@ -1,43 +1,32 @@
-// frontend/src/hooks/usePermissions.ts - VERSIÓN OPTIMIZADA
+// frontend/src/hooks/usePermissions.ts - VERSIÓN MEJORADA
 'use client';
 
-import { useApi } from './useApi';
-import { useSession } from 'next-auth/react';
-import { useMemo } from 'react';
+import { useAuth } from './useAuth';
 
 export function usePermissions() {
-  const { session, backendUser } = useApi();
-  const { data: nextAuthSession } = useSession();
+  const { user } = useAuth();
 
-  // ✅ USAR useMemo PARA EVITAR OBJETOS NUEVOS EN CADA RENDER
-  const permissions = useMemo(() => {
-    // Prioridad: backendUser > session > nextAuthSession
-    const effectiveRole = backendUser?.role || session?.user?.role || nextAuthSession?.user?.role || 'user';
-    const effectiveUser = backendUser || session?.user || nextAuthSession?.user;
+  const hasRole = (requiredRole: string): boolean => {
+    return user?.role === requiredRole;
+  };
 
-    return {
-      // Roles
-      isAdmin: effectiveRole === 'admin',
-      isTechnician: effectiveRole === 'technician' || effectiveRole === 'admin',
-      isUser: effectiveRole === 'user',
-      isAuditor: effectiveRole === 'auditor',
-      
-      // Permisos específicos
-      canViewAllTickets: effectiveRole === 'admin' || effectiveRole === 'technician' || effectiveRole === 'auditor',
-      canEditTickets: effectiveRole === 'admin' || effectiveRole === 'technician',
-      canDeleteTickets: effectiveRole === 'admin',
-      canChangePriority: effectiveRole === 'admin' || effectiveRole === 'technician',
-      canChangeStatus: effectiveRole === 'admin' || effectiveRole === 'technician',
-      canAssignTickets: effectiveRole === 'admin' || effectiveRole === 'technician',
-      canUploadFiles: true,
-      canViewReports: effectiveRole === 'admin' || effectiveRole === 'auditor',
-      
-      // Usuario
-      user: effectiveUser,
-      role: effectiveRole,
-      email: effectiveUser?.email
-    };
-  }, [backendUser, session, nextAuthSession]); // ✅ SOLO se recalcula cuando cambian estas dependencias
+  const hasAnyRole = (roles: string[]): boolean => {
+    return roles.includes(user?.role || '');
+  };
 
-  return permissions;
+  const isAdmin = hasRole('admin');
+  const isTechnician = hasRole('technician') || isAdmin;
+  const isAuditor = hasRole('auditor') || isAdmin;
+  const isUser = hasRole('user') || isTechnician || isAuditor || isAdmin;
+
+  return {
+    hasRole,
+    hasAnyRole,
+    isAdmin,
+    isTechnician,
+    isAuditor,
+    isUser,
+    userRole: user?.role || 'user',
+    isAuthenticated: !!user,
+  };
 }
