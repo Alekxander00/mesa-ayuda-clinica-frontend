@@ -1,10 +1,12 @@
-// frontend/src/hooks/useApi.ts - SIMPLIFICADO
+// frontend/src/hooks/useApi.ts - ACTUALIZADO CON COMPATIBILIDAD
 'use client';
 
 import { useSession } from 'next-auth/react';
+import { useAuth } from './useAuth';
 
 export function useApi() {
   const { data: session } = useSession();
+  const { user } = useAuth();
 
   const apiRequest = async (url: string, options: RequestInit = {}) => {
     const baseURL = process.env.NEXT_PUBLIC_API_URL || 'https://mesa-ayuda-clinica-backend-production.up.railway.app/api';
@@ -45,11 +47,14 @@ export function useApi() {
   const del = (url: string) => 
     apiRequest(url, { method: 'DELETE' });
 
+  // Mantener compatibilidad con componentes existentes
   return { 
     get, 
     post, 
     put, 
     del, 
-    session
+    session,
+    backendUser: user, // Para compatibilidad
+    forceSync: () => {}, // Método vacío para compatibilidad
   };
 }
