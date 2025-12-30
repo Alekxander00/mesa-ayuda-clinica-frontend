@@ -1,4 +1,4 @@
-// frontend/src/components/layout/Header.tsx - ACTUALIZADO
+// frontend/src/components/layout/Header.tsx - ACTUALIZADO CON CSS MODULES
 "use client";
 
 import { signOut } from "next-auth/react";
@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import styles from "./Header.module.css";
 
 export default function Header() {
   const pathname = usePathname();
@@ -67,30 +68,30 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <header className={styles.header}>
+      <div className={styles.container}>
+        <div className={styles.inner}>
           {/* Logo y Navegación */}
-          <div className="flex items-center">
-            <Link href="/dashboard" className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">🏥</span>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Link href="/dashboard" className={styles.logo}>
+              <div className={styles.logoIcon}>
+                <span>🏥</span>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Mesa de Ayuda</h1>
-                <p className="text-xs text-gray-500">Sistema Clínico</p>
+                <h1 className={styles.logoTitle}>Mesa de Ayuda</h1>
+                <p className={styles.logoSubtitle}>Sistema Clínico</p>
               </div>
             </Link>
 
-            <nav className="ml-8 flex space-x-4">
+            <nav className={styles.nav}>
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  className={`${styles.navLink} ${
                     item.current
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? styles.navLinkCurrent
+                      : styles.navLinkNotCurrent
                   }`}
                 >
                   {item.name}
@@ -101,10 +102,10 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  className={`${styles.navLink} ${
                     item.current
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? styles.navLinkCurrent
+                      : styles.navLinkNotCurrent
                   }`}
                 >
                   {item.name}
@@ -115,10 +116,10 @@ export default function Header() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  className={`${styles.navLink} ${
                     item.current
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      ? styles.navLinkCurrent
+                      : styles.navLinkNotCurrent
                   }`}
                 >
                   {item.name}
@@ -128,19 +129,23 @@ export default function Header() {
           </div>
 
           {/* Usuario y Menú */}
-          <div className="flex items-center">
+          <div className={styles.userSection}>
             {user ? (
-              <div className="relative" ref={dropdownRef}>
+              <div className={styles.dropdownContainer} ref={dropdownRef}>
                 <button
                   onClick={handleProfileClick}
-                  className="flex items-center space-x-3 rounded-lg p-2 hover:bg-gray-50"
+                  className={styles.userButton}
                 >
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                  <div className={styles.userInfo}>
+                    <span className={styles.userName}>
+                      {user.name}
+                    </span>
+                    <span className={styles.userRole}>
+                      {user.role}
+                    </span>
                   </div>
-                  <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">
+                  <div className={styles.userAvatar}>
+                    <span className={styles.userInitial}>
                       {user.name?.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -148,38 +153,35 @@ export default function Header() {
 
                 {/* Dropdown Menu */}
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                  <div className={styles.dropdown}>
                     <button
                       onClick={handleRefreshRole}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      className={styles.dropdownItem}
                     >
-                      <span className="mr-2">🔄</span>
-                      Actualizar Rol
+                      <span>🔄</span>
+                      <span>Actualizar Rol</span>
                     </button>
                     <Link
                       href="/profile"
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      className={styles.dropdownItem}
                       onClick={() => setIsProfileOpen(false)}
                     >
-                      <span className="mr-2">👤</span>
-                      Mi Perfil
+                      <span>👤</span>
+                      <span>Mi Perfil</span>
                     </Link>
-                    <div className="border-t border-gray-100 my-1"></div>
+                    <div className={styles.dropdownDivider}></div>
                     <button
                       onClick={handleSignOut}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      className={styles.dropdownItem}
                     >
-                      <span className="mr-2">🚪</span>
-                      Cerrar Sesión
+                      <span>🚪</span>
+                      <span>Cerrar Sesión</span>
                     </button>
                   </div>
                 )}
               </div>
             ) : (
-              <Link 
-                href="/login" 
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
-              >
+              <Link href="/login" className={styles.loginButton}>
                 Iniciar Sesión
               </Link>
             )}

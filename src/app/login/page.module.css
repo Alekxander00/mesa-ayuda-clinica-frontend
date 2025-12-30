@@ -1,62 +1,56 @@
 /* frontend/src/app/login/page.module.css */
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, var(--primary-50) 0%, var(--primary-100) 100%);
   padding: 1rem;
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
+  background: white;
   border-radius: 1.5rem;
-  padding: 3rem;
-  box-shadow: var(--shadow-2xl);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  width: 100%;
+  box-shadow: var(--shadow-xl);
+  padding: 2.5rem;
   max-width: 28rem;
-  animation: slideUp 0.6s ease-out;
+  width: 100%;
+  text-align: center;
 }
 
 .logo {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 1rem;
   margin-bottom: 2rem;
 }
 
 .logoIcon {
+  width: 4rem;
+  height: 4rem;
+  background: var(--primary-600);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
-  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-  border-radius: 1rem;
-  box-shadow: var(--shadow-lg);
+  margin-bottom: 1rem;
 }
 
-.logoText {
+.logoIcon span {
   color: white;
-  font-weight: bold;
   font-size: 1.5rem;
-}
-
-.logoContent {
-  flex: 1;
-}
-
-.logoTitle {
-  font-size: 1.875rem;
   font-weight: bold;
-  color: var(--gray-900);
-  margin: 0 0 0.25rem 0;
 }
 
-.logoSubtitle {
-  font-size: 1rem;
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin: 0 0 0.5rem 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
   color: var(--gray-600);
   margin: 0;
 }
@@ -64,132 +58,89 @@
 .error {
   background: var(--error-50);
   border: 1px solid var(--error-200);
-  border-radius: 0.75rem;
+  color: var(--error-700);
   padding: 1rem;
-  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
+  margin-top: 1.5rem;
+  text-align: left;
 }
 
 .errorTitle {
   font-weight: 600;
-  color: var(--error-700);
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
 }
 
 .errorMessage {
-  color: var(--error-600);
-  margin: 0 0 0.75rem 0;
   font-size: 0.875rem;
+  margin: 0 0 0.5rem 0;
 }
 
 .errorButton {
   background: none;
   border: none;
-  color: var(--error-700);
+  color: var(--error-600);
   font-size: 0.875rem;
   text-decoration: underline;
   cursor: pointer;
-}
-
-.errorButton:hover {
-  color: var(--error-800);
-}
-
-.buttonContainer {
-  margin-bottom: 1.5rem;
+  padding: 0;
 }
 
 .googleButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0.875rem 1.5rem;
-  background: white;
-  border: 1px solid var(--gray-300);
+  background: var(--primary-600);
+  color: white;
+  border: none;
   border-radius: 0.75rem;
-  color: var(--gray-700);
   font-weight: 500;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
+  font-size: 0.875rem;
   cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 1.5rem;
 }
 
-.googleButton:hover:not(:disabled) {
-  background: var(--gray-50);
-  box-shadow: var(--shadow-md);
+.googleButton:hover {
+  background: var(--primary-700);
   transform: translateY(-1px);
 }
 
 .googleButton:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .googleIcon {
   width: 1.25rem;
   height: 1.25rem;
+  margin-right: 0.75rem;
 }
 
 .loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.75rem;
 }
 
 .spinner {
+  display: inline-block;
   width: 1rem;
   height: 1rem;
-  border: 2px solid var(--gray-300);
-  border-top: 2px solid var(--primary-600);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-.footer {
-  text-align: center;
-}
-
-.footerText {
-  font-size: 0.875rem;
-  color: var(--gray-600);
-  margin: 0;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  border-top-color: white;
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 0.5rem;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  .card {
-    padding: 2rem;
-  }
-
-  .logo {
-    flex-direction: column;
-    text-align: center;
-    gap: 0.75rem;
-  }
-
-  .logoTitle {
-    font-size: 1.5rem;
-  }
-
-  .logoSubtitle {
-    font-size: 0.875rem;
-  }
+.footer {
+  margin-top: 1.5rem;
+  color: var(--gray-500);
+  font-size: 0.75rem;
 }

@@ -1,4 +1,4 @@
-// frontend/src/app/admin/authorized-emails/page.tsx - ACTUALIZADO
+// frontend/src/app/admin/authorized-emails/page.tsx - ACTUALIZADO CON CSS MODULES
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
+import styles from './page.module.css';
 
 interface AuthorizedEmail {
   id: string;
@@ -131,25 +132,23 @@ export default function AuthorizedEmailsPage() {
     }
   };
 
-  const getRoleColor = (role: string) => {
+  const getRoleClass = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'technician': return 'bg-yellow-100 text-yellow-800';
-      case 'auditor': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-green-100 text-green-800';
+      case 'admin': return styles.roleAdmin;
+      case 'technician': return styles.roleTechnician;
+      case 'auditor': return styles.roleAuditor;
+      default: return styles.roleUser;
     }
   };
 
   // Mostrar loading mientras se verifica autenticación
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={styles.container}>
         <Header />
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Verificando acceso...</p>
-          </div>
+        <div className={styles.loadingState}>
+          <div className={styles.spinner}></div>
+          <p className={styles.loadingText}>Verificando acceso...</p>
         </div>
       </div>
     );
@@ -161,55 +160,51 @@ export default function AuthorizedEmailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={styles.container}>
       <Header />
       
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Navegación */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Correos Autorizados</h1>
-            <p className="text-gray-600 mt-2">
+      <main className={styles.main}>
+        {/* Header */}
+        <div className={styles.header}>
+          <div className={styles.titleSection}>
+            <h1 className={styles.title}>Correos Autorizados</h1>
+            <p className={styles.subtitle}>
               Gestiona los correos que pueden acceder al sistema
             </p>
           </div>
           
-          <div className="flex space-x-3">
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors"
-            >
-              ← Volver al Dashboard
-            </Link>
-          </div>
+          <Link href="/dashboard" className={styles.backButton}>
+            ← Volver al Dashboard
+          </Link>
         </div>
 
         {/* Mensajes */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
-            <p className="font-medium">Error</p>
-            <p className="text-sm">{error}</p>
+          <div className={`${styles.alert} ${styles.alertError}`}>
+            <p className={styles.alertTitle}>Error</p>
+            <p className={styles.alertMessage}>{error}</p>
           </div>
         )}
         
         {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6">
-            <p className="font-medium">Éxito</p>
-            <p className="text-sm">{success}</p>
+          <div className={`${styles.alert} ${styles.alertSuccess}`}>
+            <p className={styles.alertTitle}>Éxito</p>
+            <p className={styles.alertMessage}>{success}</p>
           </div>
         )}
 
         {/* Contenido principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Formulario para agregar correos */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Agregar Nuevo Correo</h2>
+        <div className={styles.layout}>
+          {/* Columna principal */}
+          <div>
+            {/* Formulario para agregar correos */}
+            <div className={styles.card}>
+              <h2 className={styles.cardTitle}>Agregar Nuevo Correo</h2>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+              <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
                       Correo Electrónico *
                     </label>
                     <input
@@ -217,19 +212,19 @@ export default function AuthorizedEmailsPage() {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={styles.input}
                       placeholder="ejemplo@dominio.com"
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <div className={styles.formGroup}>
+                    <label className={styles.label}>
                       Rol
                     </label>
                     <select
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className={styles.select}
                     >
                       <option value="user">Usuario</option>
                       <option value="technician">Técnico</option>
@@ -239,10 +234,10 @@ export default function AuthorizedEmailsPage() {
                   </div>
                 </div>
                 
-                <div className="flex space-x-3">
+                <div className={styles.buttonGroup}>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                    className={`${styles.button} ${styles.buttonPrimary}`}
                   >
                     Agregar Correo
                   </button>
@@ -250,7 +245,7 @@ export default function AuthorizedEmailsPage() {
                   <button
                     type="button"
                     onClick={() => setShowImport(!showImport)}
-                    className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition-colors"
+                    className={`${styles.button} ${styles.buttonSecondary}`}
                   >
                     {showImport ? 'Cancelar' : 'Importar Múltiples'}
                   </button>
@@ -260,9 +255,9 @@ export default function AuthorizedEmailsPage() {
 
             {/* Importación masiva */}
             {showImport && (
-              <div className="bg-white rounded-xl shadow p-6 mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Importar Múltiples Correos</h3>
-                <p className="text-sm text-gray-600 mb-4">
+              <div className={styles.card}>
+                <h3 className={styles.cardTitle}>Importar Múltiples Correos</h3>
+                <p className={styles.importHelp}>
                   Ingresa un correo por línea. Opcionalmente, agrega el rol después de una coma.
                   <br />
                   <strong>Formato:</strong> correo@ejemplo.com,rol
@@ -273,7 +268,7 @@ export default function AuthorizedEmailsPage() {
                 <textarea
                   value={importText}
                   onChange={(e) => setImportText(e.target.value)}
-                  className="w-full h-40 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
+                  className={styles.textarea}
                   placeholder="correo1@empresa.com
 correo2@empresa.com,admin
 correo3@empresa.com,technician"
@@ -282,7 +277,7 @@ correo3@empresa.com,technician"
                 <button
                   onClick={handleImport}
                   disabled={!importText.trim()}
-                  className="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
+                  className={`${styles.button} ${styles.buttonGreen}`}
                 >
                   Importar Correos
                 </button>
@@ -290,61 +285,51 @@ correo3@empresa.com,technician"
             )}
 
             {/* Lista de correos */}
-            <div className="bg-white rounded-xl shadow overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Correos Autorizados ({emails.length})
-                </h2>
-              </div>
+            <div className={styles.card}>
+              <h2 className={styles.cardTitle}>
+                Correos Autorizados ({emails.length})
+              </h2>
               
               {loading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Cargando correos...</p>
+                <div className={styles.loadingState}>
+                  <div className={styles.spinner}></div>
+                  <p className={styles.loadingText}>Cargando correos...</p>
                 </div>
               ) : emails.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4 opacity-50">📭</div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay correos autorizados</h3>
-                  <p className="text-gray-500">Agrega el primer correo usando el formulario de arriba.</p>
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyIcon}>📭</div>
+                  <h3 className={styles.emptyTitle}>No hay correos autorizados</h3>
+                  <p className={styles.emptyText}>Agrega el primer correo usando el formulario de arriba.</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <div className={styles.tableContainer}>
+                  <table className={styles.table}>
+                    <thead className={styles.tableHeader}>
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Correo Electrónico
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Rol
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Fecha de Autorización
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Acciones
-                        </th>
+                        <th>Correo Electrónico</th>
+                        <th>Rol</th>
+                        <th>Fecha de Autorización</th>
+                        <th>Acciones</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody>
                       {emails.map((emailRecord) => (
-                        <tr key={emailRecord.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="font-medium text-gray-900">{emailRecord.email}</div>
+                        <tr key={emailRecord.id} className={styles.tableRow}>
+                          <td>
+                            <div className={styles.email}>{emailRecord.email}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(emailRecord.allowed_role)}`}>
+                          <td>
+                            <span className={`${styles.roleBadge} ${getRoleClass(emailRecord.allowed_role)}`}>
                               {emailRecord.allowed_role}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td>
                             {new Date(emailRecord.created_at).toLocaleDateString('es-ES')}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <td>
                             <button
                               onClick={() => handleDelete(emailRecord.id, emailRecord.email)}
-                              className="text-red-600 hover:text-red-900"
+                              className={styles.actionButton}
                             >
                               Eliminar
                             </button>
@@ -360,38 +345,38 @@ correo3@empresa.com,technician"
 
           {/* Panel lateral con estadísticas */}
           <div>
-            <div className="bg-white rounded-xl shadow p-6 mb-6 sticky top-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">📊 Estadísticas</h3>
+            <div className={styles.statsCard}>
+              <h3 className={styles.statsTitle}>📊 Estadísticas</h3>
               
-              <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-700">{emails.length}</div>
-                  <div className="text-sm text-blue-600">Total de correos autorizados</div>
+              <div className={styles.statsTotal}>
+                <div className={styles.totalNumber}>{emails.length}</div>
+                <div className={styles.totalLabel}>Total de correos autorizados</div>
+              </div>
+              
+              <div className={styles.distribution}>
+                <h4 className={styles.distributionTitle}>Distribución por rol:</h4>
+                <div className={styles.distributionList}>
+                  {['user', 'technician', 'admin', 'auditor'].map((role) => {
+                    const count = emails.filter(e => e.allowed_role === role).length;
+                    return (
+                      <div key={role} className={styles.distributionItem}>
+                        <span className={styles.distributionRole}>
+                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                        </span>
+                        <span className={styles.distributionCount}>{count}</span>
+                      </div>
+                    );
+                  })}
                 </div>
-                
-                <div className="space-y-2">
-                  <h4 className="font-medium text-gray-700">Distribución por rol:</h4>
-                  <div className="space-y-2">
-                    {['user', 'technician', 'admin', 'auditor'].map((role) => {
-                      const count = emails.filter(e => e.allowed_role === role).length;
-                      return (
-                        <div key={role} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">{role.charAt(0).toUpperCase() + role.slice(1)}</span>
-                          <span className="font-medium">{count}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                
-                <div className="pt-4 border-t border-gray-200">
-                  <h4 className="font-medium text-gray-700 mb-2">💡 Información</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li>• Solo los correos en esta lista pueden iniciar sesión</li>
-                    <li>• Los usuarios se crean automáticamente al primer login</li>
-                    <li>• Eliminar un correo revoca el acceso inmediatamente</li>
-                  </ul>
-                </div>
+              </div>
+              
+              <div className={styles.info}>
+                <h4 className={styles.infoTitle}>💡 Información</h4>
+                <ul className={styles.infoList}>
+                  <li className={styles.infoItem}>• Solo los correos en esta lista pueden iniciar sesión</li>
+                  <li className={styles.infoItem}>• Los usuarios se crean automáticamente al primer login</li>
+                  <li className={styles.infoItem}>• Eliminar un correo revoca el acceso inmediatamente</li>
+                </ul>
               </div>
             </div>
           </div>
