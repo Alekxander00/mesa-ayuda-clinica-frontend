@@ -1,192 +1,96 @@
-// frontend/src/components/layout/Header.tsx - CON CSS MODULE
-"use client";
+// frontend/src/components/layout/Header.tsx - VERSIÓN SIMPLIFICADA
+'use client';
 
-import { signOut } from "next-auth/react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import styles from "./Header.module.css";
+import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
+import styles from './Header.module.css';
 
 export default function Header() {
-  const pathname = usePathname();
+  const { user, loading, isAuthenticated, isAdmin, isTechnician } = useAuth();
   const router = useRouter();
-  const { user } = useAuth();
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const navigation = [
-    {
-      name: "🏠 Dashboard",
-      href: "/dashboard",
-      current: pathname === "/dashboard",
-    },
-    { name: "📋 Tickets", href: "/tickets", current: pathname === "/tickets" },
-    {
-      name: "➕ Nuevo Ticket",
-      href: "/tickets/new",
-      current: pathname === "/tickets/new",
-    },
-  ];
-
-  const adminNavigation = [
-    { name: "✉️ Correos Autorizados", href: "/admin/authorized-emails", current: pathname === "/admin/authorized-emails" },
-    
-  ];
-
-  
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsProfileOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const handleProfileClick = () => {
-    setIsProfileOpen(!isProfileOpen);
-  };
-
-  
-
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
     await signOut({ redirect: false });
-    router.push("/login");
+    router.push('/login');
   };
+
+  if (loading) {
+    return (
+      <header className={styles.header}>
+        <div className={styles.loadingHeader}>
+          <div className={styles.spinner}></div>
+          <span>Cargando...</span>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className={styles.header}>
-      <div className={styles.container}>
-        <div className={styles.innerContainer}>
-          {/* Logo y Navegación */}
-          <div className={styles.logoContainer}>
-            <Link 
-              href="/dashboard" 
-              className={styles.logo}
-              aria-label="Ir al dashboard"
-            >
-              <div className={styles.logoIcon}>
-                <span className={styles.logoText}>🏥</span>
-              </div>
-              <div className={styles.logoContent}>
-                <h1 className={styles.logoTitle}>Mesa de Ayuda</h1>
-                <p className={styles.logoSubtitle}>Sistema Clínico</p>
-              </div>
+      <div className={styles.leftSection}>
+        <Link href="/dashboard" className={styles.logo}>
+          <span className={styles.logoIcon}>🏥</span>
+          <span className={styles.logoText}>Mesa de Ayuda</span>
+        </Link>
+      </div>
+
+      <nav className={styles.nav}>
+        {isAuthenticated ? (
+          <>
+            <Link href="/dashboard" className={styles.navLink}>
+              Dashboard
             </Link>
-
-            <nav className={styles.nav} aria-label="Navegación principal">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`${styles.navItem} ${
-                    item.current ? styles.navItemCurrent : styles.navItemNotCurrent
-                  }`}
-                  aria-current={item.current ? "page" : undefined}
-                >
-                  {item.name}
-                </Link>
-              ))}
-
-              {user?.role === "admin" && adminNavigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={`${styles.navItem} ${
-                    item.current ? styles.navItemCurrent : styles.navItemNotCurrent
-                  }`}
-                  aria-current={item.current ? "page" : undefined}
-                >
-                  {item.name}
-                </Link>
-              ))}
-
-            
-            </nav>
-          </div>
-
-          {/* Usuario y Menú */}
-          <div className={styles.userSection}>
-            {user ? (
-              <div className={styles.userDropdown} ref={dropdownRef}>
-                <button
-                  onClick={handleProfileClick}
-                  className={styles.userButton}
-                  aria-expanded={isProfileOpen}
-                  aria-haspopup="true"
-                  aria-label="Menú de perfil"
-                >
-                  <div className={styles.userInfo}>
-                    <span className={styles.userName}>{user.name}</span>
-                    <span className={styles.userRole}>{user.role}</span>
-                  </div>
-                  <div className={styles.userAvatar}>
-                    <span className={styles.userInitial}>
-                      {user.name?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <svg 
-                    className={`${styles.dropdownIcon} ${isProfileOpen ? styles.dropdownIconOpen : ''}`}
-                    xmlns="http://www.w3.org/2000/svg" 
-                    viewBox="0 0 20 20" 
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </button>
-
-                {/* Dropdown Menu */}
-                {isProfileOpen && (
-                  <div className={styles.dropdown}>
-                    <div className={styles.dropdownHeader}>
-                      <p className={styles.dropdownName}>{user.name}</p>
-                      <p className={styles.dropdownEmail}>{user.email}</p>
-                      <div className={styles.dropdownRoleBadge}>{user.role}</div>
-                    </div>
-                    
-                    <div className={styles.dropdownDivider}></div>
-                    
-                    <Link
-                      href="/profile"
-                      className={styles.dropdownItem}
-                      onClick={() => setIsProfileOpen(false)}
-                      role="menuitem"
-                    >
-                      <span className={styles.dropdownItemIcon}>👤</span>
-                      <span>Mi Perfil</span>
-                    </Link>
-                    
-                    <div className={styles.dropdownDivider}></div>
-                    
-                    <button
-                      onClick={handleSignOut}
-                      className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
-                      role="menuitem"
-                    >
-                      <span className={styles.dropdownItemIcon}>🚪</span>
-                      <span>Cerrar Sesión</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link 
-                href="/login" 
-                className={styles.loginButton}
-              >
-                Iniciar Sesión
+            <Link href="/tickets" className={styles.navLink}>
+              Tickets
+            </Link>
+            {isAdmin && (
+              <Link href="/admin" className={styles.navLink}>
+                Admin
               </Link>
             )}
+            {(isAdmin || isTechnician) && (
+              <Link href="/reports" className={styles.navLink}>
+                Reportes
+              </Link>
+            )}
+          </>
+        ) : (
+          <Link href="/login" className={styles.navLink}>
+            Iniciar Sesión
+          </Link>
+        )}
+      </nav>
+
+      <div className={styles.rightSection}>
+        {isAuthenticated && user ? (
+          <div className={styles.userInfo}>
+            <div className={styles.userAvatar}>
+              {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+            </div>
+            <div className={styles.userDetails}>
+              <span className={styles.userName}>{user.name || user.email}</span>
+              <span className={`${styles.userRole} ${
+                user.role === 'admin' ? styles.roleAdmin : 
+                user.role === 'technician' ? styles.roleTechnician : 
+                user.role === 'auditor' ? styles.roleAuditor : styles.roleUser
+              }`}>
+                {user.role}
+              </span>
+            </div>
+            <button onClick={handleLogout} className={styles.logoutButton} title="Cerrar sesión">
+              <span className={styles.logoutIcon}>🚪</span>
+              <span className={styles.logoutText}>Salir</span>
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className={styles.authButtons}>
+            <Link href="/login" className={styles.loginButton}>
+              Iniciar Sesión
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   );
