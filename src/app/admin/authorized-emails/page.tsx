@@ -1,4 +1,3 @@
-// frontend/src/app/admin/authorized-emails/page.tsx - CON CSS MODULE
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -35,6 +34,18 @@ export default function AuthorizedEmailsPage() {
   const [importText, setImportText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Verificar si es admin
   useEffect(() => {
@@ -87,7 +98,6 @@ export default function AuthorizedEmailsPage() {
         setFormData({ email: '', role: 'user' });
         fetchEmails();
         
-        // Auto-ocultar mensaje de éxito después de 5 segundos
         setTimeout(() => {
           setSuccess('');
         }, 5000);
@@ -188,7 +198,7 @@ export default function AuthorizedEmailsPage() {
   // Mostrar loading mientras se verifica autenticación
   if (authLoading) {
     return (
-      <div className={styles.authLoadingContainer}>
+      <div className={styles.container}>
         <Header />
         <div className={styles.loadingCenter}>
           <div className={styles.spinner}></div>
@@ -370,15 +380,15 @@ export default function AuthorizedEmailsPage() {
                   <p className={styles.importHelpText}>
                     <strong>Formato:</strong> Un correo por línea. Opcionalmente agrega el rol después de una coma.
                   </p>
-                  <p className={styles.importExample}>
+                  <div className={styles.importExample}>
                     <strong>Ejemplo:</strong>
-                  </p>
-                  <pre className={styles.importExampleCode}>
+                    <pre className={styles.importExampleCode}>
 {`usuario@empresa.com,user
 tecnico@empresa.com,technician
 admin@empresa.com,admin
 auditor@empresa.com,auditor`}
-                  </pre>
+                    </pre>
+                  </div>
                 </div>
                 
                 <textarea
@@ -450,40 +460,40 @@ auditor@empresa.com,auditor`}
                 </div>
               ) : (
                 <div className={styles.tableContainer}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th className={styles.tableHeaderCell}>Correo Electrónico</th>
-                        <th className={styles.tableHeaderCell}>Rol</th>
-                        <th className={styles.tableHeaderCell}>Fecha de Autorización</th>
-                        <th className={styles.tableHeaderCell}>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                  {isMobile ? (
+                    // Vista móvil - Tarjetas
+                    <div className={styles.cardsList}>
                       {emails.map((emailRecord) => (
-                        <tr key={emailRecord.id} className={styles.tableRow}>
-                          <td className={styles.tableCell}>
+                        <div key={emailRecord.id} className={styles.emailCard}>
+                          <div className={styles.cardHeader}>
                             <div className={styles.emailCell}>
                               <span className={styles.emailIcon}>✉️</span>
-                              {emailRecord.email}
+                              <div className={styles.emailInfo}>
+                                <div className={styles.emailAddress}>{emailRecord.email}</div>
+                                <div className={styles.roleCell}>
+                                  <span className={styles.roleIcon}>{getRoleIcon(emailRecord.allowed_role)}</span>
+                                  <span className={`${styles.roleBadge} ${getRoleColor(emailRecord.allowed_role)}`}>
+                                    {emailRecord.allowed_role}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                          </td>
-                          <td className={styles.tableCell}>
-                            <div className={styles.roleCell}>
-                              <span className={styles.roleIcon}>{getRoleIcon(emailRecord.allowed_role)}</span>
-                              <span className={`${styles.roleBadge} ${getRoleColor(emailRecord.allowed_role)}`}>
-                                {emailRecord.allowed_role}
+                          </div>
+                          
+                          <div className={styles.cardContent}>
+                            <div className={styles.dateInfo}>
+                              <span className={styles.dateLabel}>Autorizado:</span>
+                              <span className={styles.dateValue}>
+                                {new Date(emailRecord.created_at).toLocaleDateString('es-ES', {
+                                  year: 'numeric',
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}
                               </span>
                             </div>
-                          </td>
-                          <td className={styles.tableCell}>
-                            {new Date(emailRecord.created_at).toLocaleDateString('es-ES', {
-                              year: 'numeric',
-                              month: 'short',
-                              day: 'numeric'
-                            })}
-                          </td>
-                          <td className={styles.tableCell}>
+                          </div>
+                          
+                          <div className={styles.cardActions}>
                             <button
                               onClick={() => handleDelete(emailRecord.id, emailRecord.email)}
                               className={styles.deleteButton}
@@ -492,84 +502,135 @@ auditor@empresa.com,auditor`}
                             >
                               🗑️ Eliminar
                             </button>
-                          </td>
-                        </tr>
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  ) : (
+                    // Vista desktop - Tabla
+                    <table className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th className={styles.tableHeaderCell}>Correo Electrónico</th>
+                          <th className={styles.tableHeaderCell}>Rol</th>
+                          <th className={styles.tableHeaderCell}>Fecha de Autorización</th>
+                          <th className={styles.tableHeaderCell}>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {emails.map((emailRecord) => (
+                          <tr key={emailRecord.id} className={styles.tableRow}>
+                            <td className={styles.tableCell}>
+                              <div className={styles.emailCell}>
+                                <span className={styles.emailIcon}>✉️</span>
+                                {emailRecord.email}
+                              </div>
+                            </td>
+                            <td className={styles.tableCell}>
+                              <div className={styles.roleCell}>
+                                <span className={styles.roleIcon}>{getRoleIcon(emailRecord.allowed_role)}</span>
+                                <span className={`${styles.roleBadge} ${getRoleColor(emailRecord.allowed_role)}`}>
+                                  {emailRecord.allowed_role}
+                                </span>
+                              </div>
+                            </td>
+                            <td className={styles.tableCell}>
+                              {new Date(emailRecord.created_at).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                              })}
+                            </td>
+                            <td className={styles.tableCell}>
+                              <button
+                                onClick={() => handleDelete(emailRecord.id, emailRecord.email)}
+                                className={styles.deleteButton}
+                                aria-label={`Eliminar correo ${emailRecord.email}`}
+                                title="Eliminar correo"
+                              >
+                                🗑️ Eliminar
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
           {/* Panel lateral con estadísticas */}
-          <div className={styles.sidebar}>
-            <div className={styles.statsCard}>
-              <h3 className={styles.statsTitle}>
-                <span className={styles.statsTitleIcon}>📊</span>
-                Estadísticas
-              </h3>
-              
-              <div className={styles.statsContent}>
-                <div className={styles.statBig}>
-                  <div className={styles.statNumber}>{emails.length}</div>
-                  <div className={styles.statLabel}>Total de correos autorizados</div>
-                </div>
+          {!isMobile && (
+            <div className={styles.sidebar}>
+              <div className={styles.statsCard}>
+                <h3 className={styles.statsTitle}>
+                  <span className={styles.statsTitleIcon}>📊</span>
+                  Estadísticas
+                </h3>
                 
-                <div className={styles.rolesDistribution}>
-                  <h4 className={styles.distributionTitle}>
-                    <span className={styles.distributionIcon}>📈</span>
-                    Distribución por rol:
-                  </h4>
-                  <div className={styles.distributionList}>
-                    {['admin', 'technician', 'auditor', 'user'].map((role) => {
-                      const count = emails.filter(e => e.allowed_role === role).length;
-                      const percentage = emails.length > 0 ? (count / emails.length * 100).toFixed(1) : '0';
-                      
-                      return (
-                        <div key={role} className={styles.distributionItem}>
-                          <div className={styles.distributionItemInfo}>
-                            <span className={styles.distributionRoleIcon}>{getRoleIcon(role)}</span>
-                            <span className={styles.distributionRoleName}>{role}</span>
-                          </div>
-                          <div className={styles.distributionItemStats}>
-                            <div className={styles.distributionBar}>
-                              <div 
-                                className={styles.distributionBarFill}
-                                style={{ width: `${percentage}%` }}
-                              ></div>
-                            </div>
-                            <span className={styles.distributionCount}>{count}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                <div className={styles.statsContent}>
+                  <div className={styles.statBig}>
+                    <div className={styles.statNumber}>{emails.length}</div>
+                    <div className={styles.statLabel}>Total de correos autorizados</div>
                   </div>
-                </div>
-                
-                <div className={styles.infoSection}>
-                  <h4 className={styles.infoTitle}>
-                    <span className={styles.infoTitleIcon}>💡</span>
-                    Información
-                  </h4>
-                  <ul className={styles.infoList}>
-                    <li className={styles.infoListItem}>
-                      <span className={styles.infoListIcon}>✓</span>
-                      <span>Solo los correos en esta lista pueden iniciar sesión</span>
-                    </li>
-                    <li className={styles.infoListItem}>
-                      <span className={styles.infoListIcon}>✓</span>
-                      <span>Los usuarios se crean automáticamente al primer login</span>
-                    </li>
-                    <li className={styles.infoListItem}>
-                      <span className={styles.infoListIcon}>⚠</span>
-                      <span>Eliminar un correo revoca el acceso inmediatamente</span>
-                    </li>
-                  </ul>
+                  
+                  <div className={styles.rolesDistribution}>
+                    <h4 className={styles.distributionTitle}>
+                      <span className={styles.distributionIcon}>📈</span>
+                      Distribución por rol:
+                    </h4>
+                    <div className={styles.distributionList}>
+                      {['admin', 'technician', 'auditor', 'user'].map((role) => {
+                        const count = emails.filter(e => e.allowed_role === role).length;
+                        const percentage = emails.length > 0 ? (count / emails.length * 100).toFixed(1) : '0';
+                        
+                        return (
+                          <div key={role} className={styles.distributionItem}>
+                            <div className={styles.distributionItemInfo}>
+                              <span className={styles.distributionRoleIcon}>{getRoleIcon(role)}</span>
+                              <span className={styles.distributionRoleName}>{role}</span>
+                            </div>
+                            <div className={styles.distributionItemStats}>
+                              <div className={styles.distributionBar}>
+                                <div 
+                                  className={styles.distributionBarFill}
+                                  style={{ width: `${percentage}%` }}
+                                ></div>
+                              </div>
+                              <span className={styles.distributionCount}>{count}</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  <div className={styles.infoSection}>
+                    <h4 className={styles.infoTitle}>
+                      <span className={styles.infoTitleIcon}>💡</span>
+                      Información
+                    </h4>
+                    <ul className={styles.infoList}>
+                      <li className={styles.infoListItem}>
+                        <span className={styles.infoListIcon}>✓</span>
+                        <span>Solo los correos en esta lista pueden iniciar sesión</span>
+                      </li>
+                      <li className={styles.infoListItem}>
+                        <span className={styles.infoListIcon}>✓</span>
+                        <span>Los usuarios se crean automáticamente al primer login</span>
+                      </li>
+                      <li className={styles.infoListItem}>
+                        <span className={styles.infoListIcon}>⚠</span>
+                        <span>Eliminar un correo revoca el acceso inmediatamente</span>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>
