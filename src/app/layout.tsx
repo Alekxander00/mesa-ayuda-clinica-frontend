@@ -1,4 +1,4 @@
-// frontend/src/app/layout.tsx - ACTUALIZADO
+// frontend/src/app/layout.tsx - VERSIÓN SIMPLE
 import './globals.css';
 import { Inter } from 'next/font/google';
 import SessionProvider from '@/components/providers/SessionProvider';
