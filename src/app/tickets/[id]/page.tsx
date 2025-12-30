@@ -1,7 +1,6 @@
-// frontend/src/app/tickets/[id]/page.tsx
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
@@ -57,7 +56,6 @@ export default function TicketDetailPage() {
   const { get, post, put } = useApi();
   const { getAttachments, uploadAttachments } = useTickets();
   
-  // ✅ USAR usePermissions PARA TODOS LOS PERMISOS
   const { isAdmin, isTechnician, canEditTickets, canChangeStatus, canDeleteTickets, email } = usePermissions();
 
   const [ticket, setTicket] = useState<Ticket | null>(null);
@@ -73,6 +71,8 @@ export default function TicketDetailPage() {
   const [selectedImage, setSelectedImage] = useState<{url: string, filename: string} | null>(null);
   const [imageBlobUrls, setImageBlobUrls] = useState<Record<string, string>>({});
   const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>({});
+  const [isMobile, setIsMobile] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const ticketId = useMemo(() => {
     if (!params || !params.id) {
@@ -81,6 +81,24 @@ export default function TicketDetailPage() {
     }
     return params.id as string;
   }, [params]);
+
+  // Detectar si es móvil
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Scroll al último mensaje automáticamente
+  useEffect(() => {
+    if (messagesEndRef.current && ticket?.messages?.length) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [ticket?.messages]);
 
   useEffect(() => {
     if (ticketId) {
@@ -402,7 +420,6 @@ export default function TicketDetailPage() {
     );
   }
 
-  // ✅ USAR LAS VARIABLES DE usePermissions
   const isOwner = email === ticket.user.email;
   const canReply = canEditTickets || isOwner;
   const canUploadFiles = canEditTickets || isOwner;
@@ -449,7 +466,6 @@ export default function TicketDetailPage() {
             </span>
           </div>
 
-          {/* ✅ BOTONES DE ACCIÓN USANDO canChangeStatus */}
           {canChangeStatus && (
             <div className={styles.actionButtons}>
               {ticket.status === 'open' && (
@@ -498,8 +514,99 @@ export default function TicketDetailPage() {
           )}
         </div>
 
+        {/* Mensajería primero en móvil */}
+        {isMobile && (
+          <div className={styles.messagingSection}>
+            <div className={styles.card}>
+              <h3 className={styles.cardTitle}>
+                <span>💬</span>
+                Conversación
+                <span className={styles.badge}>{ticket.messages.length}</span>
+              </h3>
+              
+              {ticket.messages.length === 0 ? (
+                <div className={styles.empty}>
+                  <p>No hay mensajes aún.</p>
+                  <p>Sé el primero en comentar.</p>
+                </div>
+              ) : (
+                <div className={styles.messagesList}>
+                  {ticket.messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`${styles.message} ${
+                        message.sender.email === email ? styles.messageOwn : ''
+                      }`}
+                    >
+                      <div className={styles.messageHeader}>
+                        <div className={styles.messageSender}>
+                          {message.sender.name}
+                          {message.sender.email === email && (
+                            <span className={styles.youBadge}>Tú</span>
+                          )}
+                          {message.sender.email === ticket.user.email && !isOwner && (
+                            <span className={styles.reporterBadge}>Reportante</span>
+                          )}
+                          {message.is_internal && (
+                            <span className={styles.internalBadge}>Interno</span>
+                          )}
+                        </div>
+                        <span className={styles.messageTime}>
+                          {new Date(message.created_at).toLocaleDateString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <div className={styles.messageBody}>
+                        {message.body}
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </div>
+
+            {/* Formulario sticky en móvil */}
+            {canReply && (
+              <div className={styles.stickyMessageForm}>
+                <form onSubmit={handleSendMessage} className={styles.messageForm}>
+                  <textarea
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder={
+                      isOwner 
+                        ? "Escribe un comentario sobre tu ticket..."
+                        : "Escribe tu respuesta al usuario..."
+                    }
+                    className={styles.messageInput}
+                    rows={2}
+                    required
+                    disabled={sendingMessage}
+                  />
+                  <button
+                    type="submit"
+                    disabled={sendingMessage || !newMessage.trim()}
+                    className={styles.sendButton}
+                  >
+                    {sendingMessage ? (
+                      <>
+                        <div className={styles.spinner}></div>
+                        Enviando...
+                      </>
+                    ) : (
+                      'Enviar'
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className={styles.layout}>
-          {/* Sidebar */}
+          {/* Sidebar - Información, Descripción y Archivos */}
           <div className={styles.sidebar}>
             {/* Información del Ticket */}
             <div className={styles.card}>
@@ -689,93 +796,96 @@ export default function TicketDetailPage() {
             </div>
           </div>
 
-          {/* Main Content - Conversación */}
-          <div className={styles.content}>
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <span>💬</span>
-                Conversación
-                <span className={styles.badge}>{ticket.messages.length}</span>
-              </h3>
-              
-              {ticket.messages.length === 0 ? (
-                <div className={styles.empty}>
-                  <p>No hay mensajes aún.</p>
-                  <p>Sé el primero en comentar.</p>
-                </div>
-              ) : (
-                <div className={styles.messagesList}>
-                  {ticket.messages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`${styles.message} ${
-                        message.sender.email === email ? styles.messageOwn : ''
-                      }`}
-                    >
-                      <div className={styles.messageHeader}>
-                        <div className={styles.messageSender}>
-                          {message.sender.name}
-                          {message.sender.email === email && (
-                            <span className={styles.youBadge}>Tú</span>
-                          )}
-                          {message.sender.email === ticket.user.email && !isOwner && (
-                            <span className={styles.reporterBadge}>Reportante</span>
-                          )}
-                          {message.is_internal && (
-                            <span className={styles.internalBadge}>Interno</span>
-                          )}
-                        </div>
-                        <span className={styles.messageTime}>
-                          {new Date(message.created_at).toLocaleDateString('es-ES', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
-                      </div>
-                      <div className={styles.messageBody}>
-                        {message.body}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Formulario de respuesta */}
-              {canReply && (
-                <form onSubmit={handleSendMessage} className={styles.messageForm}>
-                  <textarea
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder={
-                      isOwner 
-                        ? "Escribe un comentario sobre tu ticket..."
-                        : "Escribe tu respuesta al usuario..."
-                    }
-                    className={styles.messageInput}
-                    rows={3}
-                    required
-                    disabled={sendingMessage}
-                  />
-                  <div className={styles.messageActions}>
-                    <button
-                      type="submit"
-                      disabled={sendingMessage || !newMessage.trim()}
-                      className={styles.sendButton}
-                    >
-                      {sendingMessage ? (
-                        <>
-                          <div className={styles.spinner}></div>
-                          Enviando...
-                        </>
-                      ) : (
-                        'Enviar'
-                      )}
-                    </button>
+          {/* Main Content - Conversación (solo en desktop) */}
+          {!isMobile && (
+            <div className={styles.content}>
+              <div className={styles.card}>
+                <h3 className={styles.cardTitle}>
+                  <span>💬</span>
+                  Conversación
+                  <span className={styles.badge}>{ticket.messages.length}</span>
+                </h3>
+                
+                {ticket.messages.length === 0 ? (
+                  <div className={styles.empty}>
+                    <p>No hay mensajes aún.</p>
+                    <p>Sé el primero en comentar.</p>
                   </div>
-                </form>
-              )}
+                ) : (
+                  <div className={styles.messagesList}>
+                    {ticket.messages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`${styles.message} ${
+                          message.sender.email === email ? styles.messageOwn : ''
+                        }`}
+                      >
+                        <div className={styles.messageHeader}>
+                          <div className={styles.messageSender}>
+                            {message.sender.name}
+                            {message.sender.email === email && (
+                              <span className={styles.youBadge}>Tú</span>
+                            )}
+                            {message.sender.email === ticket.user.email && !isOwner && (
+                              <span className={styles.reporterBadge}>Reportante</span>
+                            )}
+                            {message.is_internal && (
+                              <span className={styles.internalBadge}>Interno</span>
+                            )}
+                          </div>
+                          <span className={styles.messageTime}>
+                            {new Date(message.created_at).toLocaleDateString('es-ES', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+                        <div className={styles.messageBody}>
+                          {message.body}
+                        </div>
+                      </div>
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </div>
+                )}
+
+                {/* Formulario de respuesta */}
+                {canReply && (
+                  <form onSubmit={handleSendMessage} className={styles.messageForm}>
+                    <textarea
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder={
+                        isOwner 
+                          ? "Escribe un comentario sobre tu ticket..."
+                          : "Escribe tu respuesta al usuario..."
+                      }
+                      className={styles.messageInput}
+                      rows={3}
+                      required
+                      disabled={sendingMessage}
+                    />
+                    <div className={styles.messageActions}>
+                      <button
+                        type="submit"
+                        disabled={sendingMessage || !newMessage.trim()}
+                        className={styles.sendButton}
+                      >
+                        {sendingMessage ? (
+                          <>
+                            <div className={styles.spinner}></div>
+                            Enviando...
+                          </>
+                        ) : (
+                          'Enviar'
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
