@@ -84,11 +84,11 @@ export default function DashboardPage() {
       <Header />
       
       <main className={styles.main}>
-        {/* Header Welcome - Compacto */}
+        {/* Header Welcome */}
         <div className={styles.header}>
           <div className={styles.welcome}>
             <h1 className={styles.title}>
-              Bienvenido, {session?.user?.name}
+              Hola, {session?.user?.name?.split(' ')[0] || session?.user?.name || 'Usuario'}
             </h1>
             <p className={styles.subtitle}>
               {isAdmin && 'Administrador • '}
@@ -103,8 +103,7 @@ export default function DashboardPage() {
               className={styles.primaryButton}
               aria-label="Crear nuevo ticket"
             >
-              <span>+</span>
-              Nuevo Ticket
+              + Nuevo Ticket
             </Link>
             <Link 
               href="/tickets" 
@@ -116,61 +115,11 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats - Compactos y discretos */}
-        <div className={styles.stats}>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>📊</div>
-            <div className={styles.statContent}>
-              <div className={styles.statNumber}>{stats.total}</div>
-              <div className={styles.statLabel}>Total</div>
-            </div>
-          </div>
-          
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>🔴</div>
-            <div className={styles.statContent}>
-              <div className={styles.statNumber}>{stats.open}</div>
-              <div className={styles.statLabel}>Abiertos</div>
-            </div>
-          </div>
-          
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>🟡</div>
-            <div className={styles.statContent}>
-              <div className={styles.statNumber}>{stats.inProgress}</div>
-              <div className={styles.statLabel}>En Progreso</div>
-            </div>
-          </div>
-          
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>🟢</div>
-            <div className={styles.statContent}>
-              <div className={styles.statNumber}>{stats.resolved}</div>
-              <div className={styles.statLabel}>Resueltos</div>
-            </div>
-          </div>
-
-          {!isAdmin && !isTechnician && (
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>👤</div>
-              <div className={styles.statContent}>
-                <div className={styles.statNumber}>{stats.myTickets}</div>
-                <div className={styles.statLabel}>Mis Tickets</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Tickets Recientes - Principal y destacado */}
+        {/* Tickets Recientes - Primero y destacado */}
         <div className={styles.recentTickets}>
           <div className={styles.sectionHeader}>
             <h2>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" style={{flexShrink: 0}}>
-                <path d="M6 6H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                <path d="M6 10H14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                <path d="M6 14H11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                <rect x="3" y="3" width="14" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/>
-              </svg>
+              <span className={styles.sectionIcon}>📋</span>
               Tickets Recientes
             </h2>
             <Link 
@@ -230,7 +179,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <p className={styles.ticketDescription}>
-                    {ticket.description || 'Sin descripción'}
+                    {ticket.description || 'Sin descripción disponible'}
                   </p>
                   <div className={styles.ticketFooter}>
                     <span className={styles.module}>
@@ -239,13 +188,57 @@ export default function DashboardPage() {
                     <span className={styles.date}>
                       {new Date(ticket.created_at).toLocaleDateString('es-ES', {
                         day: 'numeric',
-                        month: 'short',
-                        year: 'numeric'
+                        month: 'short'
                       })}
                     </span>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Stats - Compactos y discretos */}
+        <div className={styles.stats}>
+          <div className={styles.statCard}>
+            <div className={styles.statIcon}>📊</div>
+            <div className={styles.statContent}>
+              <div className={styles.statNumber}>{stats.total}</div>
+              <div className={styles.statLabel}>Total</div>
+            </div>
+          </div>
+          
+          <div className={styles.statCard}>
+            <div className={styles.statIcon}>🔴</div>
+            <div className={styles.statContent}>
+              <div className={styles.statNumber}>{stats.open}</div>
+              <div className={styles.statLabel}>Abiertos</div>
+            </div>
+          </div>
+          
+          <div className={styles.statCard}>
+            <div className={styles.statIcon}>🟡</div>
+            <div className={styles.statContent}>
+              <div className={styles.statNumber}>{stats.inProgress}</div>
+              <div className={styles.statLabel}>En Proceso</div>
+            </div>
+          </div>
+          
+          <div className={styles.statCard}>
+            <div className={styles.statIcon}>🟢</div>
+            <div className={styles.statContent}>
+              <div className={styles.statNumber}>{stats.resolved}</div>
+              <div className={styles.statLabel}>Resueltos</div>
+            </div>
+          </div>
+
+          {!isAdmin && !isTechnician && (
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>👤</div>
+              <div className={styles.statContent}>
+                <div className={styles.statNumber}>{stats.myTickets}</div>
+                <div className={styles.statLabel}>Mis Tickets</div>
+              </div>
             </div>
           )}
         </div>

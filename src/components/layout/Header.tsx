@@ -79,7 +79,7 @@ export default function Header() {
                 </div>
                 <div className={styles.logoContent}>
                   <h1 className={styles.logoTitle}>Mesa de Ayuda</h1>
-                  <p className={styles.logoSubtitle}>Sistema Clínico</p>
+                  <p className={styles.logoSubtitle}>Sistema de Mensajería</p>
                 </div>
               </Link>
 
