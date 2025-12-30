@@ -34,7 +34,7 @@ export default function UnauthorizedPage() {
             <ul className={styles.infoList}>
               <li className={styles.infoItem}>Contacta al administrador del sistema</li>
               <li className={styles.infoItem}>Verifica que tu correo esté correctamente escrito</li>
-              <li className={styles.infoItem}>Si crees que es un error, notifica al soporte</li>
+              <li className={styles.infoItem}>Si crees que es un error, notifica al Administrador</li>
             </ul>
           </div>
 
@@ -54,16 +54,6 @@ export default function UnauthorizedPage() {
               <span className={styles.buttonIcon}>🔄</span>
               Reintentar
             </button>
-          </div>
-
-          <div className={styles.adminLink}>
-            <p className={styles.adminText}>
-              Si eres administrador,
-            </p>
-            <Link href="/admin/authorized-emails" className={styles.adminLinkButton}>
-              gestiona los correos autorizados aquí
-              <span>→</span>
-            </Link>
           </div>
         </div>
       </div>
