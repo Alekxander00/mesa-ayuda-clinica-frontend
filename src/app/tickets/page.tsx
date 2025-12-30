@@ -1,4 +1,3 @@
-// frontend/src/app/tickets/page.tsx
 'use client';
 
 import { useTickets } from '@/hooks/useTickets';
@@ -150,9 +149,10 @@ export default function TicketsPage() {
               <div key={ticket.id} className={styles.ticketCard}>
                 <div className={styles.ticketHeader}>
                   <div className={styles.ticketTitleSection}>
-                    <Link href={`/tickets/${ticket.id}`} className={styles.ticketCode}>
-                      {ticket.code}
-                    </Link>
+                    <div className={styles.ticketCodeRow}>
+                      <span className={styles.ticketCodeLabel}>Código:</span>
+                      <span className={styles.ticketCodeText}>{ticket.code}</span>
+                    </div>
                     <h3 className={styles.ticketTitle}>{ticket.subject}</h3>
                   </div>
                   <div className={styles.ticketMeta}>
@@ -212,12 +212,24 @@ export default function TicketsPage() {
                     <span className={styles.reporter}>
                       Por: {ticket.user.name}
                     </span>
-                  </div>
-                  <div className={styles.ticketDates}>
                     <span className={styles.date}>
                       {new Date(ticket.created_at).toLocaleDateString('es-ES')}
                     </span>
                   </div>
+                  
+                  {/* Botón Ver Detalles - Siempre visible */}
+                  <Link 
+                    href={`/tickets/${ticket.id}`} 
+                    className={styles.detailsButton}
+                    aria-label={`Ver detalles del ticket ${ticket.code}`}
+                  >
+                    <svg className={styles.detailsIcon} width="16" height="16" viewBox="0 0 16 16" fill="none">
+                      <path d="M10 8L8 10L6 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M8 6V10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      <circle cx="8" cy="8" r="6.25" stroke="currentColor" strokeWidth="1.5"/>
+                    </svg>
+                    Ver detalles
+                  </Link>
                 </div>
 
                 {/* ✅ CORREGIDO: Usar canEditTickets y canDeleteTickets */}

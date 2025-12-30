@@ -1,4 +1,4 @@
-/* frontend/src/app/tickets/page.module.css */
+/* frontend/src/app/tickets/page.module.css - MEJORADO CON BOTÓN DETALLES */
 .container {
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
@@ -7,7 +7,9 @@
 .main {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 6rem 2rem 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Header */
@@ -24,7 +26,7 @@
 }
 
 .title {
-  font-size: 2rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--gray-900);
   margin: 0 0 0.5rem 0;
@@ -33,26 +35,30 @@
 .subtitle {
   color: var(--gray-600);
   margin: 0;
+  font-size: 0.9375rem;
 }
 
 .primaryButton {
-  background: var(--primary-600);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   text-decoration: none;
   font-weight: 600;
+  font-size: 0.875rem;
   transition: all 0.2s;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   border: none;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.12);
 }
 
 .primaryButton:hover {
-  background: var(--primary-700);
+  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-600) 100%);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
 
 /* Tickets List */
@@ -66,15 +72,15 @@
   background: white;
   padding: 1.5rem;
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--gray-200);
   transition: all 0.2s;
 }
 
 .ticketCard:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  border-color: var(--primary-500);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-300);
 }
 
 .ticketHeader {
@@ -89,18 +95,31 @@
   flex: 1;
 }
 
-.ticketCode {
-  color: var(--primary-600);
-  font-weight: 600;
-  text-decoration: none;
-  font-size: 0.875rem;
+.ticketCodeRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   margin-bottom: 0.25rem;
-  display: block;
+  flex-wrap: wrap;
 }
 
-.ticketCode:hover {
-  color: var(--primary-700);
-  text-decoration: underline;
+.ticketCodeLabel {
+  font-size: 0.75rem;
+  color: var(--gray-500);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ticketCodeText {
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', monospace;
+  font-size: 0.8125rem;
+  color: var(--primary-600);
+  font-weight: 600;
+  background: var(--primary-50);
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--primary-100);
 }
 
 .ticketTitle {
@@ -108,6 +127,7 @@
   font-weight: 600;
   color: var(--gray-900);
   margin: 0;
+  line-height: 1.4;
 }
 
 .ticketMeta {
@@ -119,30 +139,35 @@
 .status, .priority {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.6875rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   border: none;
 }
 
 .statusOpen {
-  background: var(--info-50);
-  color: var(--info-600);
+  background: var(--error-50);
+  color: var(--error-700);
+  border: 1px solid var(--error-200);
 }
 
 .statusProgress {
   background: var(--warning-50);
-  color: var(--warning-600);
+  color: var(--warning-700);
+  border: 1px solid var(--warning-200);
 }
 
 .statusResolved {
   background: var(--success-50);
-  color: var(--success-600);
+  color: var(--success-700);
+  border: 1px solid var(--success-200);
 }
 
 .statusClosed {
   background: var(--gray-100);
   color: var(--gray-600);
+  border: 1px solid var(--gray-300);
 }
 
 .priority {
@@ -152,27 +177,32 @@
 .priorityLow {
   background: var(--success-50);
   color: var(--success-600);
+  border: 1px solid var(--success-200);
 }
 
 .priorityMedium {
   background: var(--warning-50);
   color: var(--warning-600);
+  border: 1px solid var(--warning-200);
 }
 
 .priorityHigh {
   background: var(--error-50);
   color: var(--error-600);
+  border: 1px solid var(--error-200);
 }
 
 .priorityCritical {
   background: var(--error-100);
   color: var(--error-700);
+  border: 1px solid var(--error-300);
 }
 
 .ticketDescription {
   color: var(--gray-600);
   margin-bottom: 1rem;
   line-height: 1.5;
+  font-size: 0.9375rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -183,15 +213,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.875rem;
-  color: var(--gray-500);
-  margin-bottom: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-100);
 }
 
 .ticketInfo {
   display: flex;
   gap: 1rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .module {
@@ -199,21 +229,54 @@
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
   font-weight: 500;
+  font-size: 0.8125rem;
+  color: var(--gray-700);
 }
 
 .reporter {
-  font-style: italic;
+  font-size: 0.8125rem;
+  color: var(--gray-600);
 }
 
-.ticketDates {
-  display: flex;
-  gap: 1rem;
+.date {
+  font-size: 0.8125rem;
+  color: var(--gray-500);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Botón Ver Detalles */
+.detailsButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--primary-600);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 1px solid var(--primary-500);
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.15);
+}
+
+.detailsButton:hover {
+  background: var(--primary-700);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
+}
+
+.detailsIcon {
+  width: 14px;
+  height: 14px;
 }
 
 /* Ticket Actions */
 .ticketActions {
-  border-top: 1px solid var(--gray-200);
+  margin-top: 1rem;
   padding-top: 1rem;
+  border-top: 1px solid var(--gray-200);
 }
 
 .actionButtons {
@@ -223,20 +286,22 @@
 }
 
 .actionButton {
-  background: var(--primary-600);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(79, 70, 229, 0.15);
 }
 
 .actionButton:hover:not(:disabled) {
-  background: var(--primary-700);
+  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-600) 100%);
   transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
 }
 
 .actionButton:disabled {
@@ -250,15 +315,17 @@
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 0.375rem;
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-size: 0.8125rem;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.15);
 }
 
 .deleteButton:hover:not(:disabled) {
   background: var(--error-700);
   transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(220, 38, 38, 0.25);
 }
 
 .deleteButton:disabled {
@@ -272,12 +339,14 @@
   padding: 4rem 2rem;
   background: white;
   border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--gray-200);
 }
 
 .emptyIcon {
   font-size: 4rem;
   margin-bottom: 1rem;
+  opacity: 0.7;
 }
 
 .emptyTitle {
@@ -293,17 +362,20 @@
 }
 
 .emptyAction {
-  background: var(--primary-600);
+  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-500) 100%);
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   text-decoration: none;
   font-weight: 600;
   transition: background-color 0.2s;
+  display: inline-block;
 }
 
 .emptyAction:hover {
-  background: var(--primary-700);
+  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-600) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
 }
 
 /* Loading State */
@@ -377,40 +449,121 @@
 }
 
 /* Responsive */
+@media (max-width: 1024px) {
+  .main {
+    padding: 5rem 1.5rem 1.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .main {
-    padding: 1rem;
+    padding: 4.5rem 1rem 1rem;
   }
 
   .header {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .title {
+    font-size: 1.5rem;
   }
 
   .ticketHeader {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .ticketMeta {
     align-self: flex-start;
+    flex-wrap: wrap;
   }
 
   .ticketFooter {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .ticketInfo {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+    width: 100%;
+  }
+
+  .detailsButton {
+    width: 100%;
+    justify-content: center;
+    padding: 0.625rem 1rem;
   }
 
   .actionButtons {
-    justify-content: flex-start;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .actionButton, .deleteButton {
+    width: 100%;
+    justify-content: center;
+    padding: 0.625rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main {
+    padding: 4rem 0.75rem 0.75rem;
+  }
+
+  .ticketCard {
+    padding: 1.25rem;
+  }
+
+  .ticketTitle {
+    font-size: 1rem;
+  }
+
+  .ticketDescription {
+    font-size: 0.875rem;
+    -webkit-line-clamp: 3;
+  }
+}
+
+/* Accessibility */
+.primaryButton:focus-visible,
+.detailsButton:focus-visible,
+.actionButton:focus-visible,
+.deleteButton:focus-visible,
+.retryButton:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.3);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticketCard,
+  .primaryButton,
+  .detailsButton,
+  .actionButton,
+  .deleteButton,
+  .retryButton,
+  .emptyAction,
+  .skeletonLine,
+  .skeletonLineShort,
+  .skeletonButton {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .ticketCard:hover,
+  .primaryButton:hover,
+  .detailsButton:hover,
+  .actionButton:hover:not(:disabled),
+  .deleteButton:hover:not(:disabled),
+  .emptyAction:hover {
+    transform: none;
   }
 }
